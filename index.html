@@ -19,63 +19,49 @@ display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
+text-align:center;
 }
 
-.app{
-
-width:100%;
+.container{
 max-width:900px;
-text-align:center;
 padding:40px;
-
 }
 
 .titulo{
-
-font-size:48px;
+font-size:46px;
 margin-bottom:40px;
-
 }
 
 .texto{
-
-font-size:34px;
+font-size:32px;
 line-height:1.4;
-
 }
 
 .botao{
-
 margin-top:50px;
-padding:20px 40px;
-font-size:28px;
+padding:18px 40px;
+font-size:26px;
 border:none;
-border-radius:12px;
+border-radius:10px;
 background:#ffca28;
-color:black;
 cursor:pointer;
-
 }
 
 .microfone{
-
 margin-top:60px;
-width:150px;
-height:150px;
+width:140px;
+height:140px;
 border-radius:50%;
 border:none;
-font-size:60px;
+font-size:55px;
 background:#2e7d32;
 color:white;
 cursor:pointer;
-
 }
 
 .status{
-
 margin-top:30px;
-font-size:24px;
-
+font-size:22px;
 }
 
 </style>
@@ -84,19 +70,15 @@ font-size:24px;
 
 <body>
 
-<div class="app">
+<div class="container">
 
 <div class="titulo">☕ CafeCalc Rural</div>
 
 <div id="texto" class="texto"></div>
 
-<button id="continuar" class="botao">
-Começar
-</button>
+<button id="continuar" class="botao">Começar</button>
 
-<button id="mic" class="microfone" style="display:none">
-🎤
-</button>
+<button id="mic" class="microfone" style="display:none">🎤</button>
 
 <div id="status" class="status"></div>
 
@@ -106,7 +88,7 @@ Começar
 
 let precoCafe = 920
 
-let passo = 0
+let passo = -1
 
 let dados = {}
 
@@ -142,9 +124,7 @@ let campos = [
 
 function falar(texto){
 
-if(!('speechSynthesis' in window)){
-return
-}
+if(!('speechSynthesis' in window)) return
 
 speechSynthesis.cancel()
 
@@ -152,66 +132,37 @@ let msg = new SpeechSynthesisUtterance(texto)
 
 msg.lang = "pt-BR"
 msg.rate = 0.95
-msg.pitch = 1
-
-let vozes = speechSynthesis.getVoices()
-
-let vozBR = vozes.find(v => v.lang === "pt-BR")
-
-if(vozBR){
-msg.voice = vozBR
-}
 
 speechSynthesis.speak(msg)
 
 }
 
-function iniciar(){
+function mostrarInicio(){
 
-let mensagem =
+let texto =
 
-"O preço médio da saca de café hoje é " +
-precoCafe +
-" reais. " +
+"O preço médio da saca de café hoje é "+
+precoCafe+
+" reais. "+
 "Este assistente vai ajudar você a calcular o lucro aproximado da sua safra."
 
-document.getElementById("texto").innerText = mensagem
+document.getElementById("texto").innerText = texto
 
-falar(mensagem)
-
-document.getElementById("continuar").innerText = "Continuar"
+falar(texto)
 
 }
 
-document.getElementById("continuar").onclick = function(){
+function proximaPergunta(){
 
-if(passo === 0){
+passo++
 
-ativarMicrofone()
+if(passo >= perguntas.length){
 
-}
+calcular()
 
-mostrarPergunta()
-
-}
-
-async function ativarMicrofone(){
-
-try{
-
-await navigator.mediaDevices.getUserMedia({audio:true})
-
-document.getElementById("status").innerText = "Microfone ativado"
-
-}catch(e){
-
-document.getElementById("status").innerText = "Erro ao ativar microfone"
+return
 
 }
-
-}
-
-function mostrarPergunta(){
 
 document.getElementById("continuar").style.display = "none"
 
@@ -225,6 +176,22 @@ falar(pergunta)
 
 }
 
+document.getElementById("continuar").onclick = function(){
+
+if(passo === -1){
+
+passo = -1
+
+proximaPergunta()
+
+return
+
+}
+
+proximaPergunta()
+
+}
+
 document.getElementById("mic").onclick = function(){
 
 let SpeechRecognition =
@@ -234,7 +201,7 @@ window.webkitSpeechRecognition
 if(!SpeechRecognition){
 
 document.getElementById("status").innerText =
-"Navegador não suporta reconhecimento de voz"
+"Navegador não suporta microfone"
 
 return
 
@@ -246,7 +213,7 @@ recognition.lang = "pt-BR"
 
 recognition.start()
 
-document.getElementById("status").innerText = "🎤 Ouvindo..."
+document.getElementById("status").innerText="🎤 Ouvindo..."
 
 recognition.onresult = function(e){
 
@@ -256,31 +223,13 @@ let numero = texto.replace(/\D/g,'')
 
 dados[campos[passo]] = Number(numero)
 
-document.getElementById("status").innerText = "Resposta registrada"
+document.getElementById("status").innerText="Resposta salva"
 
-passo++
+document.getElementById("mic").style.display="none"
 
-document.getElementById("mic").style.display = "none"
+document.getElementById("continuar").style.display="inline-block"
 
-if(passo < perguntas.length){
-
-document.getElementById("texto").innerText =
-"Resposta salva. Clique continuar."
-
-document.getElementById("continuar").style.display = "block"
-
-}else{
-
-calcular()
-
-}
-
-}
-
-recognition.onerror = function(){
-
-document.getElementById("status").innerText =
-"Erro ao usar microfone"
+document.getElementById("texto").innerText="Resposta registrada. Clique continuar."
 
 }
 
@@ -302,24 +251,28 @@ let lucro = receita - custo
 
 let minimo = custo / dados.sacas
 
-let texto =
+let resultado =
 
-"Resultado aproximado da safra. " +
-"O lucro aproximado é " +
-lucro.toFixed(2) +
-" reais. " +
-"O preço mínimo da saca para não ter prejuízo é " +
-minimo.toFixed(2) +
-" reais. " +
-"Estes valores são apenas estimativas para ajudar na análise da produção."
+"Resultado aproximado da safra. "+
+"O lucro aproximado é "+
+lucro.toFixed(2)+
+" reais. "+
+"O preço mínimo da saca para não ter prejuízo é "+
+minimo.toFixed(2)+
+" reais. "+
+"Esses valores são aproximados."
 
-document.getElementById("texto").innerText = texto
+document.getElementById("texto").innerText = resultado
 
-falar(texto)
+document.getElementById("mic").style.display="none"
+
+document.getElementById("continuar").style.display="none"
+
+falar(resultado)
 
 }
 
-iniciar()
+mostrarInicio()
 
 </script>
 
