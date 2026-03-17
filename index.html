@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -22,48 +23,46 @@ text-align:center;
 }
 
 .container{
+width:90%;
 max-width:900px;
-padding:40px;
 }
 
 .titulo{
-font-size:46px;
+font-size:48px;
 margin-bottom:40px;
 }
 
 .texto{
-font-size:32px;
+font-size:34px;
 line-height:1.4;
+margin-bottom:40px;
+}
+
+input{
+
+width:80%;
+padding:20px;
+font-size:32px;
+border-radius:10px;
+border:none;
+text-align:center;
+
 }
 
 .botao{
-margin-top:50px;
-padding:18px 40px;
-font-size:26px;
+
+margin-top:40px;
+padding:20px 50px;
+font-size:28px;
 border:none;
 border-radius:10px;
 background:#ffca28;
 cursor:pointer;
-}
 
-.microfone{
-margin-top:60px;
-width:140px;
-height:140px;
-border-radius:50%;
-border:none;
-font-size:55px;
-background:#2e7d32;
-color:white;
-cursor:pointer;
-}
-
-.status{
-margin-top:30px;
-font-size:22px;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -74,11 +73,13 @@ font-size:22px;
 
 <div id="texto" class="texto"></div>
 
-<button id="continuar" class="botao">Começar</button>
+<input id="entrada" type="number" placeholder="Digite o número aqui">
 
-<button id="mic" class="microfone" style="display:none">🎤</button>
+<br>
 
-<div id="status" class="status"></div>
+<button id="continuar" class="botao">
+Começar
+</button>
 
 </div>
 
@@ -90,20 +91,26 @@ let passo = -1
 
 let dados = {}
 
-let vozes = []
+let vozes=[]
 
-speechSynthesis.onvoiceschanged = () => {
+speechSynthesis.onvoiceschanged = ()=>{
 vozes = speechSynthesis.getVoices()
 }
 
 let perguntas = [
 
 "Quantas sacas de café você colheu?",
+
 "Quantos hectares de café você tem?",
+
 "Quanto você gastou com mão de obra?",
+
 "Quanto você gastou com adubo?",
+
 "Quanto você gastou com agrotóxicos?",
+
 "Quanto você gastou com máquinas ou trator?",
+
 "Quanto você gastou com transporte?"
 
 ]
@@ -148,6 +155,8 @@ precoCafe+
 
 document.getElementById("texto").innerText = texto
 
+document.getElementById("entrada").style.display="none"
+
 }
 
 function proximaPergunta(){
@@ -159,8 +168,9 @@ calcular()
 return
 }
 
-document.getElementById("continuar").style.display="none"
-document.getElementById("mic").style.display="block"
+document.getElementById("entrada").value=""
+
+document.getElementById("entrada").style.display="block"
 
 let pergunta = perguntas[passo]
 
@@ -184,62 +194,19 @@ return
 
 }
 
-proximaPergunta()
+let valor = document.getElementById("entrada").value
 
-}
+if(valor===""){
 
-document.getElementById("mic").onclick=function(){
-
-let SpeechRecognition =
-window.SpeechRecognition ||
-window.webkitSpeechRecognition
-
-if(!SpeechRecognition){
-
-document.getElementById("status").innerText=
-"Navegador não suporta reconhecimento de voz"
+alert("Digite um número")
 
 return
 
 }
 
-let recognition = new SpeechRecognition()
+dados[campos[passo]] = Number(valor)
 
-recognition.lang="pt-BR"
-recognition.continuous=false
-recognition.interimResults=false
-
-document.getElementById("status").innerText="🎤 Ouvindo..."
-
-recognition.start()
-
-recognition.onresult=function(event){
-
-let texto = event.results[0][0].transcript
-
-let numero = texto.replace(/\D/g,'')
-
-dados[campos[passo]] = Number(numero)
-
-recognition.stop()
-
-document.getElementById("status").innerText="Resposta registrada"
-
-document.getElementById("mic").style.display="none"
-
-document.getElementById("continuar").style.display="inline-block"
-
-document.getElementById("texto").innerText="Resposta salva. Clique continuar."
-
-}
-
-recognition.onerror=function(){
-
-recognition.stop()
-
-document.getElementById("status").innerText="Erro ao usar microfone"
-
-}
+proximaPergunta()
 
 }
 
@@ -270,10 +237,11 @@ minimo.toFixed(2)+
 " reais. "+
 "Esses valores são estimativas."
 
-document.getElementById("texto").innerText = resultado
+document.getElementById("entrada").style.display="none"
 
-document.getElementById("mic").style.display="none"
 document.getElementById("continuar").style.display="none"
+
+document.getElementById("texto").innerText = resultado
 
 falar(resultado)
 
@@ -284,4 +252,5 @@ mostrarInicio()
 </script>
 
 </body>
+
 </html>
