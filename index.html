@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -65,7 +64,6 @@ font-size:22px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -92,26 +90,20 @@ let passo = -1
 
 let dados = {}
 
-let vozesCarregadas = []
+let vozes = []
 
 speechSynthesis.onvoiceschanged = () => {
-vozesCarregadas = speechSynthesis.getVoices()
+vozes = speechSynthesis.getVoices()
 }
 
 let perguntas = [
 
 "Quantas sacas de café você colheu?",
-
 "Quantos hectares de café você tem?",
-
 "Quanto você gastou com mão de obra?",
-
 "Quanto você gastou com adubo?",
-
 "Quanto você gastou com agrotóxicos?",
-
 "Quanto você gastou com máquinas ou trator?",
-
 "Quanto você gastou com transporte?"
 
 ]
@@ -130,22 +122,16 @@ let campos = [
 
 function falar(texto){
 
-if(!('speechSynthesis' in window)) return
-
 speechSynthesis.cancel()
 
-let msg = new SpeechSynthesisUtterance()
+let msg = new SpeechSynthesisUtterance(texto)
 
-msg.text = texto
-msg.lang = "pt-BR"
-msg.rate = 0.9
-msg.pitch = 1
+msg.lang="pt-BR"
+msg.rate=0.9
 
-let voz = vozesCarregadas.find(v => v.lang.includes("pt"))
+let voz = vozes.find(v=>v.lang.includes("pt"))
 
-if(voz){
-msg.voice = voz
-}
+if(voz) msg.voice=voz
 
 speechSynthesis.speak(msg)
 
@@ -168,16 +154,12 @@ function proximaPergunta(){
 
 passo++
 
-if(passo >= perguntas.length){
-
+if(passo>=perguntas.length){
 calcular()
-
 return
-
 }
 
 document.getElementById("continuar").style.display="none"
-
 document.getElementById("mic").style.display="block"
 
 let pergunta = perguntas[passo]
@@ -188,17 +170,13 @@ falar(pergunta)
 
 }
 
-document.getElementById("continuar").onclick = function(){
+document.getElementById("continuar").onclick=function(){
 
 speechSynthesis.resume()
 
-if(passo === -1){
+if(passo==-1){
 
-let texto = document.getElementById("texto").innerText
-
-falar(texto)
-
-passo = -1
+falar(document.getElementById("texto").innerText)
 
 proximaPergunta()
 
@@ -210,7 +188,7 @@ proximaPergunta()
 
 }
 
-document.getElementById("mic").onclick = function(){
+document.getElementById("mic").onclick=function(){
 
 let SpeechRecognition =
 window.SpeechRecognition ||
@@ -218,7 +196,7 @@ window.webkitSpeechRecognition
 
 if(!SpeechRecognition){
 
-document.getElementById("status").innerText =
+document.getElementById("status").innerText=
 "Navegador não suporta reconhecimento de voz"
 
 return
@@ -227,19 +205,23 @@ return
 
 let recognition = new SpeechRecognition()
 
-recognition.lang = "pt-BR"
-
-recognition.start()
+recognition.lang="pt-BR"
+recognition.continuous=false
+recognition.interimResults=false
 
 document.getElementById("status").innerText="🎤 Ouvindo..."
 
-recognition.onresult = function(e){
+recognition.start()
 
-let texto = e.results[0][0].transcript
+recognition.onresult=function(event){
+
+let texto = event.results[0][0].transcript
 
 let numero = texto.replace(/\D/g,'')
 
 dados[campos[passo]] = Number(numero)
+
+recognition.stop()
 
 document.getElementById("status").innerText="Resposta registrada"
 
@@ -251,7 +233,9 @@ document.getElementById("texto").innerText="Resposta salva. Clique continuar."
 
 }
 
-recognition.onerror = function(){
+recognition.onerror=function(){
+
+recognition.stop()
 
 document.getElementById("status").innerText="Erro ao usar microfone"
 
@@ -284,12 +268,11 @@ lucro.toFixed(2)+
 "O preço mínimo da saca para não ter prejuízo é "+
 minimo.toFixed(2)+
 " reais. "+
-"Esses valores são apenas estimativas para ajudar na análise da produção."
+"Esses valores são estimativas."
 
 document.getElementById("texto").innerText = resultado
 
 document.getElementById("mic").style.display="none"
-
 document.getElementById("continuar").style.display="none"
 
 falar(resultado)
@@ -301,5 +284,4 @@ mostrarInicio()
 </script>
 
 </body>
-
 </html>
