@@ -1,337 +1,1039 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CafeCalc Rural - Calculadora de Lucro</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #3e2723 0%, #5d4037 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
 
-<title>CafeCalc Rural</title>
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(62, 39, 35, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
 
-<style>
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #ffca28;
+            padding-bottom: 20px;
+        }
 
-body{
-margin:0;
-font-family:Arial;
-background:#3e2723;
-color:white;
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-}
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
 
-.app{
+        .header p {
+            font-size: 18px;
+            color: #ffca28;
+            font-weight: bold;
+        }
 
-width:100vw;
-height:100vh;
+        .conteudo-principal {
+            min-height: 300px;
+            margin-bottom: 30px;
+        }
 
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
+        .secao {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
 
-padding:40px;
-box-sizing:border-box;
-text-align:center;
+        .secao.ativa {
+            display: block;
+        }
 
-}
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-.titulo{
+        .titulo-secao {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #ffca28;
+            text-align: center;
+        }
 
-font-size:42px;
-margin-bottom:40px;
+        .descricao {
+            font-size: 20px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            background: rgba(255, 202, 40, 0.1);
+            padding: 20px;
+            border-left: 5px solid #ffca28;
+            border-radius: 8px;
+        }
 
-}
+        .grupo-entrada {
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #666;
+        }
 
-.texto{
+        .grupo-entrada label {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #ffca28;
+            font-weight: bold;
+        }
 
-font-size:38px;
-max-width:900px;
-line-height:1.4;
+        .grupo-entrada p {
+            font-size: 15px;
+            margin-bottom: 15px;
+            color: #ccc;
+            line-height: 1.5;
+        }
 
-}
+        .entrada-flex {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-.botao{
+        .grupo-entrada input {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #ffca28;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-align: center;
+        }
 
-margin-top:60px;
-padding:20px 40px;
-font-size:30px;
-border:none;
-border-radius:12px;
-cursor:pointer;
+        .grupo-entrada input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
 
-background:#ffca28;
-color:black;
+        .grupo-entrada input:focus {
+            outline: none;
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 10px rgba(255, 202, 40, 0.5);
+        }
 
-}
+        .info-unidade {
+            background: #2e7d32;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
 
-.microfone{
+        .botoes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 30px;
+        }
 
-margin-top:60px;
+        button {
+            padding: 18px 35px;
+            font-size: 18px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-width:140px;
-height:140px;
+        .btn-continuar {
+            background: #ffca28;
+            color: #000;
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
 
-border-radius:50%;
+        .btn-continuar:hover {
+            background: #ffd966;
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 202, 40, 0.4);
+        }
 
-border:none;
+        .btn-microfone {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #2e7d32;
+            color: white;
+            font-size: 50px;
+            padding: 0;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #66bb6a;
+        }
 
-font-size:60px;
+        .btn-microfone:hover {
+            background: #388e3c;
+            box-shadow: 0 0 20px rgba(46, 125, 50, 0.6);
+        }
 
-background:#2e7d32;
-color:white;
+        .btn-microfone.gravando {
+            animation: pulse 0.6s infinite;
+            background: #d32f2f;
+            border-color: #f44336;
+        }
 
-cursor:pointer;
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(211, 47, 47, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(211, 47, 47, 0.8);
+            }
+        }
 
-}
+        .btn-voltar {
+            background: #666;
+            color: white;
+        }
 
-.status{
+        .btn-voltar:hover {
+            background: #888;
+        }
 
-margin-top:30px;
-font-size:24px;
+        .btn-reiniciar {
+            background: #2196F3;
+            color: white;
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
 
-}
+        .btn-reiniciar:hover {
+            background: #64b5f6;
+        }
 
-</style>
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            text-align: center;
+            min-height: 30px;
+            font-weight: bold;
+        }
 
+        .status.info {
+            background: rgba(33, 150, 243, 0.2);
+            color: #64b5f6;
+            border: 2px solid #2196F3;
+        }
+
+        .status.sucesso {
+            background: rgba(46, 125, 50, 0.2);
+            color: #81c784;
+            border: 2px solid #2e7d32;
+        }
+
+        .status.erro {
+            background: rgba(211, 47, 47, 0.2);
+            color: #ef5350;
+            border: 2px solid #d32f2f;
+        }
+
+        .status.aviso {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ffb74d;
+            border: 2px solid #ff9800;
+        }
+
+        .relatorio {
+            background: rgba(255, 202, 40, 0.1);
+            border: 3px solid #ffca28;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .relatorio h2 {
+            color: #ffca28;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .linha-relatorio {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 202, 40, 0.3);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .linha-relatorio:last-child {
+            border-bottom: none;
+        }
+
+        .linha-relatorio.destaque {
+            background: rgba(255, 202, 40, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 22px;
+            margin: 15px 0;
+        }
+
+        .linha-relatorio.lucro {
+            color: #81c784;
+        }
+
+        .linha-relatorio.prejuizo {
+            color: #ef5350;
+        }
+
+        .label-relatorio {
+            flex: 1;
+            color: #ffca28;
+        }
+
+        .valor-relatorio {
+            text-align: right;
+            font-weight: bold;
+            color: #fff;
+            min-width: 200px;
+        }
+
+        .dica {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .dica strong {
+            color: #81c784;
+        }
+
+        .condicao-aviso {
+            background: rgba(255, 152, 0, 0.15);
+            border: 2px solid #ff9800;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #ffb74d;
+        }
+
+        .condicao-critica {
+            background: rgba(211, 47, 47, 0.15);
+            border: 2px solid #d32f2f;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #ef5350;
+            font-weight: bold;
+        }
+
+        .condicao-positiva {
+            background: rgba(76, 175, 80, 0.15);
+            border: 2px solid #4caf50;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #81c784;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 36px;
+            }
+
+            .titulo-secao {
+                font-size: 24px;
+            }
+
+            .descricao {
+                font-size: 16px;
+            }
+
+            .grupo-entrada label {
+                font-size: 16px;
+            }
+
+            .grupo-entrada input {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            button {
+                padding: 15px 25px;
+                font-size: 16px;
+            }
+
+            .entrada-flex {
+                flex-direction: column;
+            }
+
+            .info-unidade {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        .oculto {
+            display: none !important;
+        }
+
+        .visivel {
+            display: block !important;
+        }
+    </style>
 </head>
 
 <body>
-
-<div class="app">
-
-<div class="titulo">☕ CafeCalc Rural</div>
-
-<div id="texto" class="texto"></div>
-
-<button id="continuar" class="botao" style="display:none">
-Continuar
-</button>
-
-<button id="mic" class="microfone" style="display:none">
-🎤
-</button>
-
-<div id="status" class="status"></div>
-
-</div>
-
-<script>
-
-let precoCafe = 1966
-
-let passo=0
-
-let recognition
-
-let dados={}
-
-let perguntas=[
-
-"Quantas sacas de café você colheu?",
-
-"Quantos hectares de café você tem?",
-
-"Quanto você gastou com mão de obra?",
-
-"Quanto você gastou com adubo?",
-
-"Quanto você gastou com agrotóxicos?",
-
-"Quanto você gastou com máquinas ou trator?",
-
-"Quanto você gastou com transporte?"
-
-]
-
-let campos=[
-
-"sacas",
-"hectares",
-"mao",
-"adubo",
-"agro",
-"trator",
-"transporte"
-
-]
-
-function falar(texto,callback){
-
-let msg=new SpeechSynthesisUtterance(texto)
-
-msg.lang="pt-BR"
-
-msg.rate=0.9
-
-msg.onend=function(){
-
-if(callback)callback()
-
-}
-
-speechSynthesis.speak(msg)
-
-}
-
-function iniciar(){
-
-let mensagem=
-
-"O preço médio da saca de café hoje é "+
-precoCafe+
-" reais. "+
-"Este assistente vai ajudar você a calcular o lucro da sua safra."
-
-document.getElementById("texto").innerText=mensagem
-
-falar(mensagem,function(){
-
-document.getElementById("continuar").style.display="block"
-
-})
-
-}
-
-document.getElementById("continuar").onclick=function(){
-
-if(passo==0){
-
-ativarMicrofone()
-
-}
-
-mostrarPergunta()
-
-}
-
-async function ativarMicrofone(){
-
-try{
-
-await navigator.mediaDevices.getUserMedia({audio:true})
-
-document.getElementById("status").innerText="Microfone ativado"
-
-}catch(e){
-
-document.getElementById("status").innerText="Erro ao ativar microfone"
-
-}
-
-}
-
-function mostrarPergunta(){
-
-document.getElementById("continuar").style.display="none"
-
-document.getElementById("mic").style.display="block"
-
-let pergunta=perguntas[passo]
-
-document.getElementById("texto").innerText=pergunta
-
-falar(pergunta)
-
-}
-
-document.getElementById("mic").onclick=function(){
-
-let SpeechRecognition=
-window.SpeechRecognition||
-window.webkitSpeechRecognition
-
-if(!SpeechRecognition){
-
-document.getElementById("status").innerText=
-"Navegador não suporta reconhecimento de voz"
-
-return
-
-}
-
-recognition=new SpeechRecognition()
-
-recognition.lang="pt-BR"
-
-recognition.start()
-
-document.getElementById("status").innerText="🎤 Ouvindo..."
-
-recognition.onresult=function(e){
-
-let texto=e.results[0][0].transcript
-
-let numero=texto.replace(/\D/g,'')
-
-dados[campos[passo]]=Number(numero)
-
-document.getElementById("status").innerText="Resposta registrada"
-
-passo++
-
-document.getElementById("mic").style.display="none"
-
-if(passo<perguntas.length){
-
-document.getElementById("texto").innerText=
-"Resposta salva. Clique continuar."
-
-document.getElementById("continuar").style.display="block"
-
-}else{
-
-calcular()
-
-}
-
-}
-
-recognition.onerror=function(){
-
-document.getElementById("status").innerText=
-"Erro ao usar microfone"
-
-}
-
-}
-
-function calcular(){
-
-let custo=
-
-dados.mao+
-dados.adubo+
-dados.agro+
-dados.trator+
-dados.transporte
-
-let receita=dados.sacas*precoCafe
-
-let lucro=receita-custo
-
-let minimo=custo/dados.sacas
-
-let texto=
-
-"Resultado aproximado da safra. "+
-"O lucro aproximado é "+
-lucro.toFixed(2)+
-" reais. "+
-"O preço mínimo da saca para não ter prejuízo é "+
-minimo.toFixed(2)+
-" reais."
-
-document.getElementById("texto").innerText=texto
-
-falar(texto)
-
-}
-
-iniciar()
-
-</script>
-
+    <div class="container">
+        <div class="header">
+            <h1>☕ CafeCalc Rural</h1>
+            <p>Calculadora de Lucro para Produtores de Café</p>
+        </div>
+
+        <div class="conteudo-principal">
+            <!-- SEÇÃO DE BOAS-VINDAS -->
+            <div id="secao-boas-vindas" class="secao ativa">
+                <div class="titulo-secao">Bem-vindo ao CafeCalc!</div>
+                <div class="descricao" id="mensagem-boas-vindas">
+                    Olá produtor! 👋<br><br>
+                    Este programa vai ajudar você a saber quanto lucrou (ou perdeu) na sua colheita de café.<br><br>
+                    Vou fazer algumas perguntas simples sobre sua produção, e depois mostro o resultado de forma clara.
+                </div>
+                <div class="dica">
+                    <strong>💡 Dica:</strong> Você pode responder falando (com o microfone) ou digitando. Escolha o que for mais fácil para você!
+                </div>
+                <div class="botoes">
+                    <button class="btn-continuar" onclick="irParaProxima('secao-boas-vindas', 'secao-perguntas-iniciais')">
+                        ▶ Começar Agora
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEÇÃO DE PERGUNTAS INICIAIS -->
+            <div id="secao-perguntas-iniciais" class="secao">
+                <div class="titulo-secao">Informações Básicas</div>
+                <div class="descricao">
+                    Primeiro, vamos entender sua situação. Responda com sinceridade para que possamos fazer o cálculo certo. 👇
+                </div>
+
+                <!-- Quantas sacas colheu -->
+                <div class="grupo-entrada">
+                    <label>1️⃣ Quantas sacas de café você colheu?</label>
+                    <p>Uma saca tem 60 quilos. Se você tem dúvida, conte as sacas que tem em casa ou no armazém.</p>
+                    <div class="entrada-flex">
+                        <input type="number" id="input-sacas" placeholder="Digite o número de sacas" min="0" step="1">
+                        <button class="btn-microfone" onclick="iniciarGravacao('input-sacas', 'saca')">🎤</button>
+                    </div>
+                </div>
+
+                <!-- Hectares -->
+                <div class="grupo-entrada">
+                    <label>2️⃣ Quantos hectares você plantou?</label>
+                    <p>Se não sabe ao certo, pode colocar um número aproximado. Um hectare tem 10.000 metros quadrados.</p>
+                    <div class="entrada-flex">
+                        <input type="number" id="input-hectares" placeholder="Digite o número de hectares" min="0" step="0.1">
+                        <button class="btn-microfone" onclick="iniciarGravacao('input-hectares', 'hectares')">🎤</button>
+                    </div>
+                </div>
+
+                <div class="botoes">
+                    <button class="btn-continuar" onclick="validarEAvançar('secao-perguntas-iniciais', 'secao-custos-1')">
+                        ▶ Próximo
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEÇÃO DE CUSTOS - PARTE 1 -->
+            <div id="secao-custos-1" class="secao">
+                <div class="titulo-secao">Custos da Produção - Parte 1</div>
+                <div class="descricao">
+                    Agora, vamos falar sobre quanto você gastou. Se não lembra o valor exato, coloque um valor aproximado.
+                </div>
+
+                <!-- Mão de Obra -->
+                <div class="grupo-entrada">
+                    <label>💪 Quanto você gastou com mão de obra?</label>
+                    <p>Inclua salários de trabalhadores, ajudantes, colhedores durante toda a safra.</p>
+                    <div class="entrada-flex">
+                        <span class="info-unidade">R$</span>
+                        <input type="number" id="input-mao-obra" placeholder="Ex: 5000" min="0" step="100">
+                        <button class="btn-microfone" onclick="iniciarGravacao('input-mao-obra', 'reais')">🎤</button>
+                    </div>
+                </div>
+
+                <!-- Adubo -->
+                <div class="grupo-entrada">
+                    <label>🌱 Quanto você gastou com adubo?</label>
+                    <p>Adubo químico, adubo orgânico, calcário e outros fertilizantes.</p>
+                    <div class="entrada-flex">
+                        <span class="info-unidade">R$</span>
+                        <input type="number" id="input-adubo" placeholder="Ex: 3000" min="0" step="100">
+                        <button class="btn-microfone" onclick="iniciarGravacao('input-adubo', 'reais')">🎤</button>
+                    </div>
+                </div>
+
+                <!-- Agrotóxicos -->
+                <div class="grupo-entrada">
+                    <label>🧪 Quanto você gastou com agrotóxicos e defensivos?</label>
+                    <p>Veneno para pragas, doenças, fungicidas, inseticidas e similares.</p>
+                    <div class="entrada-flex">
+                        <span class="info-unidade">R$</span>
+                        <input type="number" id="input-agrotoxicos" placeholder="Ex: 2000" min="0" step="100">
+                        <button class="btn-microfone" onclick="iniciarGravacao('input-agrotoxicos', 'reais')">🎤</button>
+                    </div>
+                </div>
+
+                <div class="botoes">
+                    <button class="btn-voltar" onclick="voltarSecao('secao-perguntas-iniciais')">◀ Voltar</button>
+                    <button class="btn-continuar" onclick="irParaProxima('secao-custos-1', 'secao-custos-2')">
+                        ▶ Próximo
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEÇÃO DE CUSTOS - PARTE 2 -->
+            <div id="secao-custos-2" class="secao">
+                <div class="titulo-secao">Custos da Produção - Parte 2</div>
+                <div class="descricao">
+                    Continuamos listando os gastos. Quase lá! 📋
+                </div>
+
+                <!-- Máquinas e Trator -->
+                <div class="grupo-entrada">
+                    <label>🚜 Quanto você gastou com máquinas e trator?</label>
+                    <p>Diesel, manutenção, aluguel, combustível, consertos de equipamentos.</p>
+                    <div class="entrada-flex">
+                        <span class="info-unidade">R$</span>
+                        <input type="number" id="input-trator" placeholder="Ex: 4000" min="0" step="100">
+                        <button class="btn-microfone" onclick="iniciarGravacao('input-trator', 'reais')">🎤</button>
+                    </div>
+                </div>
+
+                <!-- Transporte -->
+                <div class="grupo-entrada">
+                    <label>🚛 Quanto você gastou com transporte?</label>
+                    <p>Frete para o armazém, para a cooperativa ou para vender. Gasolina do carro.</p>
+                    <div class="entrada-flex">
+                        <span class="info-unidade">R$</span>
+                        <input type="number" id="input-transporte" placeholder="Ex: 2000" min="0" step="100">
+                        <button class="btn-microfone" onclick="iniciarGravacao('input-transporte', 'reais')">🎤</button>
+                    </div>
+                </div>
+
+                <!-- Outros Custos (NOVO) -->
+                <div class="grupo-entrada">
+                    <label>📝 Outros gastos?</label>
+                    <p>Sementes, mudas, água para irrigação, energia, embalagens, arrendamento de terra... qualquer outra coisa que você gastou.</p>
+                    <div class="entrada-flex">
+                        <span class="info-unidade">R$</span>
+                        <input type="number" id="input-outros" placeholder="Ex: 1000" min="0" step="100">
+                        <button class="btn-microfone" onclick="iniciarGravacao('input-outros', 'reais')">🎤</button>
+                    </div>
+                </div>
+
+                <div class="botoes">
+                    <button class="btn-voltar" onclick="voltarSecao('secao-custos-1')">◀ Voltar</button>
+                    <button class="btn-continuar" onclick="validarECalcular()">
+                        ✅ Ver Resultado
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEÇÃO DE RESULTADO -->
+            <div id="secao-resultado" class="secao">
+                <div class="titulo-secao">📊 Resultado da Sua Safra</div>
+                <div id="conteudo-resultado"></div>
+                <div class="botoes">
+                    <button class="btn-reiniciar" onclick="reiniciar()">
+                        🔄 Calcular Novamente
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // ========== CONFIGURAÇÕES E DADOS ==========
+        const precoCafe = 5.50; // Preço em reais por quilo (1 saca = 60kg)
+        let dados = {};
+        let reconhecimentoVoz = null;
+        let telaAtual = 'secao-boas-vindas';
+        let inputAtual = null;
+
+        // ========== FUNÇÕES DE NAVEGAÇÃO ==========
+        function irParaProxima(telaAtual, proximaTela) {
+            mudarTela(proximaTela);
+        }
+
+        function voltarSecao(telaPrecedente) {
+            mudarTela(telaPrecedente);
+        }
+
+        function mudarTela(novaTela) {
+            // Esconde a tela atual
+            document.getElementById(telaAtual).classList.remove('ativa');
+            
+            // Mostra a nova tela
+            document.getElementById(novaTela).classList.add('ativa');
+            
+            // Atualiza a tela atual
+            telaAtual = novaTela;
+            
+            // Limpa o status
+            limparStatus();
+            
+            // Rola para o topo
+            window.scrollTo(0, 0);
+        }
+
+        // ========== FUNÇÕES DE ENTRADA DE DADOS ==========
+        function validarEAvançar(telaAtual, proximaTela) {
+            const sacas = parseFloat(document.getElementById('input-sacas').value) || 0;
+            const hectares = parseFloat(document.getElementById('input-hectares').value) || 0;
+
+            if (sacas === 0 || hectares === 0) {
+                mostrarStatus('❌ Por favor, preencha os campos com números maiores que zero!', 'erro');
+                return;
+            }
+
+            if (sacas > 10000 || hectares > 1000) {
+                mostrarStatus('⚠️ Os valores parecem muito altos. Verifique se digitou certo!', 'aviso');
+                return;
+            }
+
+            dados.sacas = sacas;
+            dados.hectares = hectares;
+            dados.produtividadeHa = (sacas / hectares).toFixed(2);
+
+            mudarTela(proximaTela);
+        }
+
+        function validarECalcular() {
+            // Coleta todos os valores
+            const maoObra = parseFloat(document.getElementById('input-mao-obra').value) || 0;
+            const adubo = parseFloat(document.getElementById('input-adubo').value) || 0;
+            const agrotoxicos = parseFloat(document.getElementById('input-agrotoxicos').value) || 0;
+            const trator = parseFloat(document.getElementById('input-trator').value) || 0;
+            const transporte = parseFloat(document.getElementById('input-transporte').value) || 0;
+            const outros = parseFloat(document.getElementById('input-outros').value) || 0;
+
+            // Armazena os dados
+            dados.maoObra = maoObra;
+            dados.adubo = adubo;
+            dados.agrotoxicos = agrotoxicos;
+            dados.trator = trator;
+            dados.transporte = transporte;
+            dados.outros = outros;
+
+            // Calcula o total de custos
+            dados.custosTotal = maoObra + adubo + agrotoxicos + trator + transporte + outros;
+
+            // Calcula receita (sacas × 60kg × preço por kg)
+            dados.receita = dados.sacas * 60 * precoCafe;
+
+            // Calcula lucro/prejuízo
+            dados.lucro = dados.receita - dados.custosTotal;
+
+            // Calcula preço mínimo da saca
+            dados.precoMinimo = (dados.custosTotal / dados.sacas).toFixed(2);
+
+            // Preço por hectare
+            dados.precoPerHectare = (dados.lucro / dados.hectares).toFixed(2);
+
+            // Calcula margem de lucro
+            dados.margemLucro = ((dados.lucro / dados.receita) * 100).toFixed(2);
+
+            // Exibe o resultado
+            exibirResultado();
+        }
+
+        // ========== RECONHECIMENTO DE VOZ ==========
+        function iniciarGravacao(idInput, tipo) {
+            inputAtual = document.getElementById(idInput);
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                mostrarStatus('❌ Seu navegador não suporta entrada por voz. Digite manualmente, por favor.', 'erro');
+                return;
+            }
+
+            reconhecimentoVoz = new SpeechRecognition();
+            reconhecimentoVoz.lang = 'pt-BR';
+            reconhecimentoVoz.continuous = false;
+            reconhecimentoVoz.interimResults = false;
+
+            // Muda cor do botão para indicar gravação
+            event.target.classList.add('gravando');
+            mostrarStatus('🎤 Escutando... Fale agora!', 'info');
+
+            reconhecimentoVoz.onresult = function(evento) {
+                const transcript = evento.results[0][0].transcript;
+                
+                // Extrai apenas números do texto
+                let numero = transcript.replace(/\D/g, '');
+                
+                if (numero === '') {
+                    mostrarStatus('❌ Não consegui entender o número. Tente novamente.', 'erro');
+                } else {
+                    inputAtual.value = numero;
+                    mostrarStatus('✅ Número recebido: ' + numero, 'sucesso');
+                }
+                
+                event.target.classList.remove('gravando');
+            };
+
+            reconhecimentoVoz.onerror = function(evento) {
+                mostrarStatus('❌ Erro ao usar o microfone. Tente digitar o número.', 'erro');
+                event.target.classList.remove('gravando');
+            };
+
+            reconhecimentoVoz.onend = function() {
+                event.target.classList.remove('gravando');
+            };
+
+            try {
+                reconhecimentoVoz.start();
+            } catch (e) {
+                mostrarStatus('❌ Erro ao iniciar o microfone.', 'erro');
+            }
+        }
+
+        // ========== EXIBIÇÃO DE RESULTADO ==========
+        function exibirResultado() {
+            const conteudo = document.getElementById('conteudo-resultado');
+            let html = '';
+
+            // RELATÓRIO PRINCIPAL
+            html += `
+                <div class="relatorio">
+                    <h2>📋 RELATÓRIO DETALHADO</h2>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">Quantidade de sacas colhidas:</div>
+                        <div class="valor-relatorio">${dados.sacas.toFixed(0)} sacas</div>
+                    </div>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">Total de hectares plantados:</div>
+                        <div class="valor-relatorio">${dados.hectares.toFixed(2)} hectares</div>
+                    </div>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">Produtividade por hectare:</div>
+                        <div class="valor-relatorio">${dados.produtividadeHa} sacas/hectare</div>
+                    </div>
+
+                    <hr style="margin: 15px 0; border: 1px solid rgba(255, 202, 40, 0.3);">
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">💰 <strong>RECEITA TOTAL (quanto você vendeu):</strong></div>
+                        <div class="valor-relatorio" style="color: #81c784; font-size: 20px;">R$ ${dados.receita.toFixed(2)}</div>
+                    </div>
+
+                    <hr style="margin: 15px 0; border: 1px solid rgba(255, 202, 40, 0.3);">
+
+                    <h3 style="color: #ffca28; margin: 20px 0 15px 0; font-size: 22px;">Detalhamento dos Custos:</h3>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">👥 Mão de obra:</div>
+                        <div class="valor-relatorio">R$ ${dados.maoObra.toFixed(2)}</div>
+                    </div>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">🌱 Adubo:</div>
+                        <div class="valor-relatorio">R$ ${dados.adubo.toFixed(2)}</div>
+                    </div>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">🧪 Agrotóxicos/Defensivos:</div>
+                        <div class="valor-relatorio">R$ ${dados.agrotoxicos.toFixed(2)}</div>
+                    </div>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">🚜 Máquinas/Trator:</div>
+                        <div class="valor-relatorio">R$ ${dados.trator.toFixed(2)}</div>
+                    </div>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">🚛 Transporte:</div>
+                        <div class="valor-relatorio">R$ ${dados.transporte.toFixed(2)}</div>
+                    </div>
+                    
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">📝 Outros gastos:</div>
+                        <div class="valor-relatorio">R$ ${dados.outros.toFixed(2)}</div>
+                    </div>
+
+                    <div class="linha-relatorio" style="margin-top: 10px; padding-top: 15px; border-top: 2px solid rgba(255, 202, 40, 0.5);">
+                        <div class="label-relatorio" style="font-size: 20px;"><strong>💸 TOTAL DE CUSTOS:</strong></div>
+                        <div class="valor-relatorio" style="color: #ef5350; font-size: 20px;"><strong>R$ ${dados.custosTotal.toFixed(2)}</strong></div>
+                    </div>
+
+                    <hr style="margin: 15px 0; border: 1px solid rgba(255, 202, 40, 0.3);">
+            `;
+
+            // RESULTADO FINAL
+            if (dados.lucro > 0) {
+                html += `
+                    <div class="linha-relatorio lucro destaque">
+                        <div class="label-relatorio">🎉 LUCRO LÍQUIDO:</div>
+                        <div class="valor-relatorio">R$ ${dados.lucro.toFixed(2)}</div>
+                    </div>
+                `;
+            } else if (dados.lucro < 0) {
+                html += `
+                    <div class="linha-relatorio prejuizo destaque">
+                        <div class="label-relatorio">😞 PREJUÍZO:</div>
+                        <div class="valor-relatorio">R$ ${Math.abs(dados.lucro).toFixed(2)}</div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="linha-relatorio destaque">
+                        <div class="label-relatorio">⚖️ RESULTADO: EMPATOU</div>
+                        <div class="valor-relatorio">R$ 0,00</div>
+                    </div>
+                `;
+            }
+
+            html += `
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">Margem de lucro (%):</div>
+                        <div class="valor-relatorio">${dados.margemLucro}%</div>
+                    </div>
+
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">Lucro/Prejuízo por hectare:</div>
+                        <div class="valor-relatorio">R$ ${dados.precoPerHectare}</div>
+                    </div>
+
+                    <div class="linha-relatorio">
+                        <div class="label-relatorio">Preço mínimo da saca (ponto de equilíbrio):</div>
+                        <div class="valor-relatorio">R$ ${dados.precoMinimo}</div>
+                    </div>
+                </div>
+            `;
+
+            // ANÁLISE E INTERPRETAÇÃO
+            html += gerarAnalise();
+
+            conteudo.innerHTML = html;
+            mudarTela('secao-resultado');
+            falarResultado();
+        }
+
+        function gerarAnalise() {
+            let html = '';
+
+            // ANÁLISE DE RENTABILIDADE
+            if (dados.lucro > 0) {
+                html += `
+                    <div class="condicao-positiva">
+                        <strong>✅ Ótima Notícia!</strong><br><br>
+                        Você teve lucro nesta safra! 🎉<br><br>
+                        Você ganhou R$ ${dados.lucro.toFixed(2)} de lucro. Isso significa que depois de pagar todos os seus gastos, você ainda tem esse dinheiro para guardar, investir ou usar como quiser.<br><br>
+                        <strong>A margem de lucro foi de ${dados.margemLucro}%</strong> - isto significa que a cada R$ 100 reais que você vendeu, ficou R$ ${dados.margemLucro.replace('.', ',')} de lucro.
+                    </div>
+                `;
+            } else if (dados.lucro < 0) {
+                html += `
+                    <div class="condicao-critica">
+                        <strong>⚠️ Atenção!</strong><br><br>
+                        Você teve prejuízo nesta safra. 😔<br><br>
+                        Seus gastos foram maiores que sua receita. Você perdeu R$ ${Math.abs(dados.lucro).toFixed(2)}.<br><br>
+                        <strong>Por que isso aconteceu?</strong>
+                        <ul style="margin-top: 10px; margin-left: 20px;">
+                            <li>Produção menor que o esperado</li>
+                            <li>Custos maiores que o planejado</li>
+                            <li>Combinação dos dois fatores</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="condicao-aviso">
+                        <strong>⚖️ Situação Neutra</strong><br><br>
+                        Seu lucro foi zero. Você vendeu exatamente o que gastou. Não ganhou nem perdeu dinheiro.<br><br>
+                        Mas lembre-se: você trabalhou a safra inteira e não ficou com nada! Considere aumentar a produção ou reduzir custos na próxima safra.
+                    </div>
+                `;
+            }
+
+            // ANÁLISE DE PRODUTIVIDADE
+            html += `
+                <div class="dica">
+                    <strong>📊 Análise de Produtividade:</strong><br>
+                    Sua propriedade produziu ${dados.produtividadeHa} sacas por hectare.<br><br>
+            `;
+
+            const prodHa = parseFloat(dados.produtividadeHa);
+            if (prodHa < 20) {
+                html += `
+                    A produtividade está <strong>abaixo da média</strong> (que é cerca de 30-40 sacas/hectare). <br>
+                    Considere:<br>
+                    • Melhorar o manejo do solo<br>
+                    • Usar fertilizantes adequados<br>
+                    • Combater pragas e doenças melhor<br>
+                    • Renovar as plantas se tiverem mais de 30 anos
+                `;
+            } else if (prodHa > 40) {
+                html += `
+                    Parabéns! Sua produtividade está <strong>acima da média</strong>! 🌟<br>
+                    Você está fazendo um ótimo trabalho. Mantenha as práticas que estão funcionando.
+                `;
+            } else {
+                html += `
+                    Sua produtividade está na <strong>média normal</strong>. Está tudo bem, mas há espaço para melhorar.
+                `;
+            }
+
+            html += `</div>`;
+
+            // ANÁLISE DE CUSTOS
+            const percentualMaoObra = (dados.maoObra / dados.custosTotal * 100).toFixed(1);
+            const percentualAdubo = (dados.adubo / dados.custosTotal * 100).toFixed(1);
+            const percentualAgrotoxicos = (dados.agrotoxicos / dados.custosTotal * 100).toFixed(1);
+
+            html += `
+                <div class="dica">
+                    <strong>💰 Distribuição dos Custos:</strong><br>
+                    • Mão de obra: ${percentualMaoObra}% do total<br>
+                    • Adubo: ${percentualAdubo}% do total<br>
+                    • Agrotóxicos: ${percentualAgrotoxicos}% do total<br><br>
+                    <strong>Dica:</strong> Seu maior custo é a mão de obra. Considere melhorar a eficiência dos trabalhadores ou usar mais mecanização (se possível).
+                </div>
+            `;
+
+            return html;
+        }
+
+        // ========== FALA SÍNTESE ==========
+        function falarResultado() {
+            const textoResultado = `
+                Resultado da sua safra:
+                Você colheu ${dados.sacas.toFixed(0)} sacas em ${dados.hectares.toFixed(2)} hectares.
+                Sua receita total foi de ${dados.receita.toFixed(2)} reais.
+                Seus gastos totais foram de ${dados.custosTotal.toFixed(2)} reais.
+                ${dados.lucro > 0 ? `Seu lucro foi de ${dados.lucro.toFixed(2)} reais.` : dados.lucro < 0 ? `Você teve um prejuízo de ${Math.abs(dados.lucro).toFixed(2)} reais.` : 'Você empatou, não ganhou nem perdeu dinheiro.'}
+            `;
+
+            falar(textoResultado);
+        }
+
+        function falar(texto) {
+            if (!('speechSynthesis' in window)) {
+                console.log('Síntese de voz não suportada');
+                return;
+            }
+
+            // Cancela qualquer fala anterior
+            speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'pt-BR';
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            speechSynthesis.speak(utterance);
+        }
+
+        // ========== FUNÇÕES DE STATUS ==========
+        function mostrarStatus(mensagem, tipo = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = mensagem;
+            statusDiv.className = 'status ' + tipo;
+        }
+
+        function limparStatus() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = '';
+            statusDiv.className = 'status';
+        }
+
+        // ========== REINICIAR ==========
+        function reiniciar() {
+            // Limpa todos os inputs
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.value = '';
+            });
+
+            // Reseta os dados
+            dados = {};
+
+            // Volta para a tela inicial
+            document.getElementById(telaAtual).classList.remove('ativa');
+            document.getElementById('secao-boas-vindas').classList.add('ativa');
+            telaAtual = 'secao-boas-vindas';
+
+            limparStatus();
+            window.scrollTo(0, 0);
+
+            falar('Pronto! Começamos novamente. Bem-vindo ao CafeCalc Rural!');
+        }
+
+        // ========== INICIALIZAÇÃO ==========
+        window.addEventListener('load', function() {
+            falar('Bem-vindo ao CafeCalc Rural! Clique em começar agora para calcular seu lucro.');
+        });
+    </script>
 </body>
 
 </html>
