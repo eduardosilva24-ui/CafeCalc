@@ -11,34 +11,37 @@
 
 body{
 margin:0;
-font-family:Arial, sans-serif;
-background:#4e342e;
+font-family:Arial;
 color:white;
 display:flex;
 justify-content:center;
 align-items:center;
 height:100vh;
 text-align:center;
+background:#4e342e url("https://www.transparenttextures.com/patterns/coffee-beans.png");
 }
 
 .container{
 width:90%;
 max-width:900px;
+background:rgba(0,0,0,0.5);
+padding:30px;
+border-radius:20px;
 }
 
 .titulo{
 font-size:48px;
-margin-bottom:30px;
+margin-bottom:20px;
 }
 
 .texto{
-font-size:32px;
+font-size:30px;
 margin-bottom:30px;
 }
 
 input{
 width:70%;
-padding:18px;
+padding:20px;
 font-size:28px;
 border-radius:10px;
 border:none;
@@ -46,7 +49,7 @@ text-align:center;
 }
 
 .botao{
-margin-top:30px;
+margin-top:20px;
 padding:18px 40px;
 font-size:26px;
 border:none;
@@ -55,22 +58,71 @@ background:#ffca28;
 cursor:pointer;
 }
 
+.start{
+font-size:40px;
+border-radius:50%;
+animation:pulsar 1.5s infinite;
+}
+
+@keyframes pulsar{
+0%{transform:scale(1)}
+50%{transform:scale(1.2)}
+100%{transform:scale(1)}
+}
+
+.audio{
+position:fixed;
+top:20px;
+right:20px;
+font-size:28px;
+background:#2e7d32;
+border:none;
+border-radius:50%;
+padding:15px;
+cursor:pointer;
+}
+
+.barra-container{
+width:100%;
+height:40px;
+background:#ddd;
+border-radius:20px;
+margin-top:20px;
+overflow:hidden;
+display:none;
+}
+
+.barra{
+height:100%;
+width:0%;
+transition:1s;
+}
+
+.lucro{ background:#4caf50; }
+.prejuizo{ background:#f44336; }
+
 </style>
 </head>
 
 <body>
 
+<button class="audio" onclick="repetir()">🔊</button>
+
 <div class="container">
 
-<div class="titulo">☕ CafeCalc Rural</div>
+<div class="titulo">☕ CafeCalc</div>
 
 <div id="texto" class="texto"></div>
 
-<input id="entrada" type="number" placeholder="Digite o número aqui">
+<input id="entrada" type="number" placeholder="Digite o número">
+
+<div class="barra-container" id="barraBox">
+<div id="barra" class="barra"></div>
+</div>
 
 <br>
 
-<button id="continuar" class="botao">Começar</button>
+<button id="continuar" class="botao start">▶</button>
 
 </div>
 
@@ -79,51 +131,51 @@ cursor:pointer;
 let precoCafe = 920
 let passo = -1
 let dados = {}
+let textoAtual = ""
 
 let perguntas = [
-"Quantas sacas de café você colheu?",
-"Quantos hectares de café você tem?",
-"Quanto você gastou com mão de obra?",
-"Quanto você gastou com adubo?",
-"Quanto você gastou com agrotóxicos?",
-"Quanto você gastou com máquinas ou trator?",
-"Quanto você gastou com transporte?"
+"Quantas sacas você colheu?",
+"Quantos hectares você tem?",
+"Quanto gastou com mão de obra?",
+"Quanto gastou com adubo?",
+"Quanto gastou com veneno?",
+"Quanto gastou com trator?",
+"Quanto gastou com transporte?"
 ]
 
 let campos = [
-"sacas",
-"hectares",
-"mao",
-"adubo",
-"agro",
-"trator",
-"transporte"
+"sacas","hectares","mao","adubo","agro","trator","transporte"
 ]
 
 function falar(texto){
-
 if(!('speechSynthesis' in window)) return
-
 speechSynthesis.cancel()
-
 let msg = new SpeechSynthesisUtterance(texto)
 msg.lang="pt-BR"
 msg.rate=0.9
-
 speechSynthesis.speak(msg)
+}
 
+function repetir(){
+falar(textoAtual)
+}
+
+function somFazenda(){
+let audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_115b9b2c33.mp3")
+audio.volume=0.3
+audio.play()
 }
 
 function mostrarInicio(){
 
-let texto = 
-"O preço médio da saca de café hoje é "+precoCafe+
-" reais. Este programa ajuda a calcular o lucro aproximado da sua safra."
+textoAtual =
+"O preço do café hoje é " + precoCafe +
+" reais. Vou te ajudar a ver seu lucro."
 
-document.getElementById("texto").innerText = texto
+document.getElementById("texto").innerText = textoAtual
 document.getElementById("entrada").style.display="none"
 
-falar(texto)
+falar(textoAtual)
 
 }
 
@@ -139,21 +191,19 @@ return
 document.getElementById("entrada").value=""
 document.getElementById("entrada").style.display="inline"
 
-let pergunta = perguntas[passo]
+textoAtual = perguntas[passo]
 
-document.getElementById("texto").innerText = pergunta
+document.getElementById("texto").innerText = textoAtual
 
-falar(pergunta)
+falar(textoAtual)
 
 }
 
 document.getElementById("continuar").onclick=function(){
 
 if(passo == -1){
-
 proximaPergunta()
 return
-
 }
 
 let valor = document.getElementById("entrada").value
@@ -172,60 +222,79 @@ proximaPergunta()
 function calcular(){
 
 let custo =
-dados.mao +
-dados.adubo +
-dados.agro +
-dados.trator +
-dados.transporte
+dados.mao + dados.adubo + dados.agro + dados.trator + dados.transporte
 
 let receita = dados.sacas * precoCafe
-
 let lucro = receita - custo
-
 let minimo = custo / dados.sacas
 
-let textoFinal = ""
+let barra = document.getElementById("barra")
+let box = document.getElementById("barraBox")
+
+box.style.display="block"
+
+let intensidade = Math.min(Math.abs(lucro)/receita*100,100)
+barra.style.width = intensidade+"%"
+
+if(lucro>0){
+barra.className="barra lucro"
+}else{
+barra.className="barra prejuizo"
+}
+
+/* TEXTO BASE */
+textoAtual =
+"Você produziu " + dados.sacas + " sacas. " +
+"Você gastou " + custo.toFixed(0) + " reais. " +
+"Você recebeu " + receita.toFixed(0) + " reais. "
+
+if(lucro>0){
+textoAtual += "Você teve lucro de " + lucro.toFixed(0) + " reais. "
+}else{
+textoAtual += "Você teve prejuízo de " + Math.abs(lucro).toFixed(0) + " reais. "
+}
+
+textoAtual +=
+"O preço mínimo da saca é " + minimo.toFixed(0) + " reais. "
+
+/* 🤖 ASSISTENTE INTELIGENTE */
+let produtividade = dados.sacas / dados.hectares
+
+if(produtividade < 20){
+textoAtual += " Sua produção está baixa. Tente melhorar o cuidado com a lavoura. "
+}
+
+if(produtividade > 40){
+textoAtual += " Sua produção está muito boa. Continue assim. "
+}
+
+if(dados.mao > custo * 0.4){
+textoAtual += " Você está gastando muito com mão de obra. "
+}
+
+if(dados.adubo > custo * 0.3){
+textoAtual += " O gasto com adubo está alto. "
+}
+
+if(minimo > precoCafe){
+textoAtual += " Cuidado. Se o preço cair, você pode ter prejuízo. "
+}
 
 if(lucro > 0){
-
-textoFinal =
-"Vamos analisar sua produção. " +
-"Você produziu aproximadamente " + dados.sacas + " sacas de café. " +
-"Com o preço atual da saca em " + precoCafe + " reais, sua receita aproximada foi de " +
-receita.toFixed(2) + " reais. " +
-"O seu custo total de produção foi de aproximadamente " +
-custo.toFixed(2) + " reais. " +
-"Isso significa que você teve um lucro aproximado de " +
-lucro.toFixed(2) + " reais nesta safra. " +
-"Para não ter prejuízo, o preço mínimo da sua saca precisaria ser de aproximadamente " +
-minimo.toFixed(2) + " reais. " +
-"Esses valores são estimativas e servem apenas para ajudar você a entender melhor a situação da sua produção."
-
+textoAtual += " Sua produção está dando lucro. "
+}else{
+textoAtual += " É importante reduzir custos para melhorar. "
 }
 
-else{
-
-textoFinal =
-"Vamos analisar sua produção. " +
-"Você produziu aproximadamente " + dados.sacas + " sacas de café. " +
-"Com o preço atual da saca em " + precoCafe + " reais, sua receita aproximada foi de " +
-receita.toFixed(2) + " reais. " +
-"O seu custo total de produção foi de aproximadamente " +
-custo.toFixed(2) + " reais. " +
-"Neste cenário, infelizmente sua produção teve um prejuízo aproximado de " +
-Math.abs(lucro).toFixed(2) + " reais. " +
-"Para não ter prejuízo, o preço mínimo da sua saca precisaria ser de aproximadamente " +
-minimo.toFixed(2) + " reais. " +
-"Esses valores são estimativas e servem apenas para ajudar você a entender melhor a situação da sua produção."
-
-}
+textoAtual += " Esses valores são apenas uma estimativa."
 
 document.getElementById("entrada").style.display="none"
 document.getElementById("continuar").style.display="none"
 
-document.getElementById("texto").innerText = textoFinal
+document.getElementById("texto").innerText = textoAtual
 
-falar(textoFinal)
+somFazenda()
+falar(textoAtual)
 
 }
 
