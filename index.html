@@ -4,29 +4,48 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CafeCalc Rural</title>
-  <meta name="description" content="Calculadora visual de custo, lucro, produtividade e preço de equilíbrio para produtores de café.">
-  <link rel="preconnect" href="https://images.unsplash.com">
-  <link rel="preconnect" href="https://raw.githubusercontent.com">
+  <meta name="description" content="Gestao financeira simples para produtores de cafe acompanharem custos, operacoes e lucro previsto da safra.">
   <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
-      --leaf: #246b4a;
-      --leaf-2: #154f3a;
-      --sun: #f4b740;
-      --sky: #4a90a4;
-      --soil: #5a4034;
-      --ink: #17231d;
-      --muted: #5d6b62;
-      --paper: #fbfaf5;
-      --line: #dfe4da;
+      color-scheme: light;
+      --bg: #f4f7f1;
+      --surface: #ffffff;
+      --surface-2: #eef4ea;
+      --surface-3: #f9fbf6;
+      --ink: #18221d;
+      --muted: #617064;
+      --line: #dce4d8;
+      --brand: #246b4a;
+      --brand-2: #174c38;
+      --sun: #f0b94f;
+      --blue: #3b7f91;
+      --red: #bd3d32;
       --good: #1f8a4c;
-      --warn: #c47a0a;
-      --bad: #c24135;
-      --soft-good: #e5f4eb;
-      --soft-warn: #fff3d9;
-      --soft-bad: #fde8e5;
-      --white: #fff;
-      --shadow: 0 18px 50px rgba(23, 35, 29, 0.14);
+      --warn: #b76a10;
+      --bad: #bd3d32;
+      --shadow: 0 20px 55px rgba(24, 34, 29, 0.14);
+      --radius: 8px;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #101712;
+      --surface: #17211a;
+      --surface-2: #1e2d24;
+      --surface-3: #121b15;
+      --ink: #edf5eb;
+      --muted: #a9b7ac;
+      --line: #314237;
+      --brand: #6fc494;
+      --brand-2: #9dd4b3;
+      --sun: #e6b75c;
+      --blue: #7bc0d0;
+      --red: #ef8b80;
+      --good: #7bd88f;
+      --warn: #f0c26f;
+      --bad: #ef8b80;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.32);
     }
 
     * {
@@ -35,7 +54,7 @@
 
     html {
       min-height: 100%;
-      background: #edf2ea;
+      background: var(--bg);
     }
 
     body {
@@ -44,15 +63,26 @@
       color: var(--ink);
       font-family: Arial, Helvetica, sans-serif;
       background:
-        linear-gradient(90deg, rgba(237, 242, 234, 0.94), rgba(237, 242, 234, 0.82)),
+        linear-gradient(180deg, rgba(244, 247, 241, 0.94), rgba(244, 247, 241, 0.98)),
         url("https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1800&q=80");
-      background-size: cover;
+      background-attachment: fixed;
       background-position: center;
+      background-size: cover;
+    }
+
+    [data-theme="dark"] body {
+      background:
+        linear-gradient(180deg, rgba(16, 23, 18, 0.95), rgba(16, 23, 18, 0.98)),
+        url("https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1800&q=80");
+      background-attachment: fixed;
+      background-position: center;
+      background-size: cover;
     }
 
     button,
     input,
-    select {
+    select,
+    textarea {
       font: inherit;
     }
 
@@ -60,981 +90,375 @@
       border: 0;
     }
 
-    .app {
+    a {
+      color: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .app-shell {
+      width: min(1220px, calc(100% - 28px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 14px 0 28px;
+    }
+
+    .topbar {
       display: grid;
-      grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
-      gap: 20px;
-      width: min(1180px, calc(100% - 28px));
-      min-height: calc(100vh - 28px);
-      margin: 14px auto;
-    }
-
-    .side,
-    .main {
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid rgba(223, 228, 218, 0.88);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-    }
-
-    .side {
-      display: flex;
-      flex-direction: column;
-      min-height: 720px;
-      overflow: hidden;
+      grid-template-columns: minmax(210px, 1fr) minmax(280px, 460px) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
     }
 
     .brand {
-      padding: 22px;
-      color: var(--white);
-      background: linear-gradient(140deg, var(--leaf-2), var(--leaf));
-    }
-
-    .brand-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .logo {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 800;
-      font-size: 28px;
-      letter-spacing: 0;
+      min-height: 68px;
+      padding: 14px 16px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--brand-2), var(--brand));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
-    .logo-mark {
+    .brand-mark {
       display: grid;
       width: 44px;
       height: 44px;
+      flex: 0 0 auto;
       place-items: center;
-      color: var(--leaf-2);
+      color: #1f3b2e;
       background: var(--sun);
-      border-radius: 8px;
+      border-radius: var(--radius);
     }
 
-    .logo-mark svg {
-      width: 26px;
-      height: 26px;
+    .brand h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1;
     }
 
-    .brand-sub {
-      margin: 16px 0 0;
-      max-width: 28ch;
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 16px;
-      line-height: 1.45;
+    .brand p {
+      margin: 5px 0 0;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 13px;
+      line-height: 1.3;
     }
 
-    .audio-btn,
-    .icon-btn {
+    .market-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      min-height: 68px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    [data-theme="dark"] .market-strip {
+      background: rgba(23, 33, 26, 0.94);
+    }
+
+    .market-item {
+      min-width: 0;
+      padding: 9px 10px;
+      background: var(--surface-3);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .market-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .market-item strong {
+      display: block;
+      margin-top: 5px;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 17px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .icon-btn,
+    .secondary,
+    .ghost,
+    .primary,
+    .nav-btn,
+    .chip-btn,
+    .danger-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 46px;
-      height: 46px;
-      color: var(--white);
-      background: rgba(255, 255, 255, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.24);
-      border-radius: 8px;
+      gap: 8px;
+      min-height: 44px;
+      border-radius: var(--radius);
       cursor: pointer;
+      font-weight: 800;
+      transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
     }
 
-    .audio-btn:hover,
-    .icon-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
+    .icon-btn {
+      width: 48px;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
     }
 
-    .side-photo {
-      position: relative;
-      min-height: 154px;
-      background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.42)),
-        url("https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?auto=format&fit=crop&w=1000&q=80");
-      background-size: cover;
-      background-position: center;
+    .primary {
+      min-width: 150px;
+      padding: 0 18px;
+      color: #fff;
+      background: var(--brand);
     }
 
-    .market {
+    .secondary {
+      padding: 0 15px;
+      color: var(--ink);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+    }
+
+    .ghost {
+      padding: 0 12px;
+      color: var(--brand-2);
+      background: transparent;
+      border: 1px solid transparent;
+    }
+
+    .danger-btn {
+      padding: 0 13px;
+      color: #fff;
+      background: var(--bad);
+    }
+
+    .icon-btn:hover,
+    .secondary:hover,
+    .ghost:hover,
+    .primary:hover,
+    .nav-btn:hover,
+    .chip-btn:hover,
+    .danger-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.62;
+      transform: none !important;
+    }
+
+    svg {
+      width: 19px;
+      height: 19px;
+      flex: 0 0 auto;
+      stroke-width: 2.2;
+    }
+
+    .auth-view,
+    .workspace {
+      min-height: calc(100vh - 110px);
+    }
+
+    .auth-view {
       display: grid;
-      gap: 12px;
-      padding: 18px;
-      border-bottom: 1px solid var(--line);
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 18px;
+      align-items: stretch;
     }
 
-    .market-head,
-    .section-head {
+    .auth-intro,
+    .auth-card,
+    .panel,
+    .sidebar,
+    .work-panel,
+    .terms-card,
+    .toast {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    [data-theme="dark"] .auth-intro,
+    [data-theme="dark"] .auth-card,
+    [data-theme="dark"] .panel,
+    [data-theme="dark"] .sidebar,
+    [data-theme="dark"] .work-panel,
+    [data-theme="dark"] .terms-card,
+    [data-theme="dark"] .toast {
+      background: rgba(23, 33, 26, 0.95);
+    }
+
+    .auth-intro {
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: space-between;
-      gap: 12px;
+      min-height: 620px;
+      overflow: hidden;
+    }
+
+    .intro-photo {
+      min-height: 270px;
+      background:
+        linear-gradient(90deg, rgba(23, 76, 56, 0.78), rgba(36, 107, 74, 0.18)),
+        url("https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?auto=format&fit=crop&w=1300&q=80");
+      background-position: center;
+      background-size: cover;
+    }
+
+    .intro-copy {
+      padding: 26px;
     }
 
     .eyebrow {
-      margin: 0;
+      margin: 0 0 7px;
       color: var(--muted);
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
-    .source-state {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 28px;
-      padding: 5px 8px;
-      border-radius: 8px;
-      color: var(--leaf-2);
-      background: var(--soft-good);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .source-state.warn {
-      color: var(--warn);
-      background: var(--soft-warn);
-    }
-
-    .price-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .price-tile,
-    .metric,
-    .choice-card,
-    .chart-box,
-    .diagnosis,
-    .input-shell {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--white);
-    }
-
-    .price-tile {
-      padding: 12px;
-    }
-
-    .price-label {
-      margin: 0 0 5px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .price-value {
+    .intro-copy h2,
+    .view-title h2,
+    .panel-title h3,
+    .terms-card h2 {
       margin: 0;
-      color: var(--leaf-2);
-      font-size: 23px;
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .market-note {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .side-status {
-      display: grid;
-      gap: 12px;
-      padding: 18px;
-    }
-
-    .mini-list {
-      display: grid;
-      gap: 10px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .mini-list li {
-      display: grid;
-      grid-template-columns: 36px 1fr;
-      gap: 10px;
-      align-items: center;
-      min-height: 50px;
-      padding: 9px;
-      background: #f4f7f0;
-      border-radius: 8px;
-    }
-
-    .mini-list svg {
-      width: 24px;
-      height: 24px;
-      color: var(--leaf);
-    }
-
-    .mini-title {
-      margin: 0;
-      font-weight: 800;
-    }
-
-    .mini-text {
-      margin: 2px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .main {
-      display: flex;
-      min-width: 0;
-      padding: 24px;
-    }
-
-    .workspace {
-      display: grid;
-      align-content: start;
-      gap: 20px;
-      width: 100%;
-      min-width: 0;
-    }
-
-    .progress-wrap {
-      display: grid;
-      gap: 8px;
-    }
-
-    .progress-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .progress-line {
-      height: 12px;
-      overflow: hidden;
-      background: #dfe8da;
-      border-radius: 8px;
-    }
-
-    .progress-fill {
-      width: 0;
-      height: 100%;
-      background: linear-gradient(90deg, var(--leaf), var(--sun));
-      transition: width 240ms ease;
-    }
-
-    .question-panel {
-      display: grid;
-      gap: 22px;
-      min-height: 520px;
-    }
-
-    .question-title {
-      display: grid;
-      gap: 12px;
-      margin: 0;
-    }
-
-    .question-title span {
-      color: var(--muted);
-      font-size: 15px;
-      font-weight: 800;
-    }
-
-    .question-title strong {
-      font-size: clamp(32px, 5vw, 58px);
-      line-height: 1.03;
+      color: var(--ink);
       letter-spacing: 0;
     }
 
-    .question-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 72px;
-      height: 72px;
-      color: var(--leaf-2);
-      background: var(--soft-good);
-      border: 1px solid #cae8d7;
-      border-radius: 8px;
-    }
-
-    .question-icon svg {
-      width: 42px;
-      height: 42px;
-    }
-
-    .choice-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(150px, 1fr));
-      gap: 12px;
-    }
-
-    .choice-card {
-      display: grid;
-      gap: 12px;
-      min-height: 180px;
-      padding: 16px;
-      color: var(--ink);
-      text-align: left;
-      cursor: pointer;
-      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
-    }
-
-    .choice-card:hover {
-      border-color: var(--leaf);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(36, 107, 74, 0.12);
-    }
-
-    .choice-card.active {
-      border-color: var(--leaf);
-      background: var(--soft-good);
-      box-shadow: inset 0 0 0 2px rgba(36, 107, 74, 0.16);
-    }
-
-    .choice-card svg {
-      width: 34px;
-      height: 34px;
-      color: var(--leaf);
-    }
-
-    .choice-name {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 900;
+    .intro-copy h2 {
+      max-width: 680px;
+      font-size: 34px;
       line-height: 1.08;
     }
 
-    .choice-desc,
-    .choice-price {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.35;
-    }
-
-    .choice-price {
-      color: var(--soil);
-      font-weight: 900;
-    }
-
-    .number-area {
-      display: grid;
-      gap: 16px;
-      max-width: 760px;
-    }
-
-    .input-shell {
-      display: grid;
-      grid-template-columns: 72px minmax(0, 1fr) 72px;
-      overflow: hidden;
-    }
-
-    .step-btn {
-      display: grid;
-      min-height: 102px;
-      place-items: center;
-      color: var(--white);
-      background: var(--leaf);
-      cursor: pointer;
-    }
-
-    .step-btn:hover {
-      background: var(--leaf-2);
-    }
-
-    .step-btn svg {
-      width: 34px;
-      height: 34px;
-    }
-
-    .answer-input {
-      width: 100%;
-      min-width: 0;
-      padding: 18px 16px;
-      color: var(--ink);
-      background: var(--white);
-      border: 0;
-      border-right: 1px solid var(--line);
-      border-left: 1px solid var(--line);
-      font-size: clamp(38px, 7vw, 76px);
-      font-weight: 900;
-      line-height: 1;
-      text-align: center;
-      outline: none;
-    }
-
-    .unit-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .unit-badge,
-    .quick-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 46px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-weight: 900;
-    }
-
-    .unit-badge {
-      color: var(--soil);
-      background: #f1ece3;
-    }
-
-    .quick-btn {
-      color: var(--leaf-2);
-      background: #e8f3ed;
-      border: 1px solid #cfe5d7;
-      cursor: pointer;
-    }
-
-    .quick-btn:hover {
-      background: #d8ecdf;
-    }
-
-    .price-source-box {
-      display: grid;
-      gap: 16px;
-      max-width: 760px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--white);
-    }
-
-    .price-source-top {
-      display: grid;
-      grid-template-columns: 64px minmax(0, 1fr);
-      gap: 14px;
-      align-items: center;
-    }
-
-    .price-source-top svg {
-      width: 48px;
-      height: 48px;
-      color: var(--sky);
-    }
-
-    .source-price {
-      margin: 0;
-      color: var(--leaf-2);
-      font-size: clamp(36px, 6vw, 62px);
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .source-caption {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .nav-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 6px;
-    }
-
-    .primary,
-    .secondary,
-    .ghost {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      min-height: 54px;
-      padding: 14px 20px;
-      border-radius: 8px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .primary {
-      color: var(--white);
-      background: var(--leaf);
-    }
-
-    .primary:hover {
-      background: var(--leaf-2);
-    }
-
-    .secondary {
-      color: var(--leaf-2);
-      background: #e7f1ec;
-      border: 1px solid #cbe3d4;
-    }
-
-    .secondary:hover {
-      background: #d8eadf;
-    }
-
-    .ghost {
-      color: var(--muted);
-      background: transparent;
-    }
-
-    .ghost:hover {
-      color: var(--leaf-2);
-      background: #eef4ea;
-    }
-
-    .primary svg,
-    .secondary svg,
-    .ghost svg {
-      width: 22px;
-      height: 22px;
-    }
-
-    .error {
-      display: none;
-      margin: 0;
-      color: var(--bad);
-      font-weight: 900;
-    }
-
-    .error.show {
-      display: block;
-    }
-
-    .results {
-      display: none;
-      gap: 20px;
-    }
-
-    .results.show {
-      display: grid;
-    }
-
-    .result-hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 18px;
-      align-items: start;
-      padding: 20px;
-      color: var(--white);
-      background: linear-gradient(140deg, var(--leaf-2), #267d69);
-      border-radius: 8px;
-    }
-
-    .result-hero.bad {
-      background: linear-gradient(140deg, #8f2d27, var(--bad));
-    }
-
-    .result-hero.warn {
-      background: linear-gradient(140deg, #8d5b09, var(--warn));
-    }
-
-    .result-hero h1 {
-      margin: 0;
-      font-size: clamp(32px, 5vw, 56px);
-      line-height: 1.05;
-      letter-spacing: 0;
-    }
-
-    .result-hero p {
-      margin: 10px 0 0;
-      max-width: 78ch;
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 18px;
-      line-height: 1.45;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 10px;
-    }
-
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(160px, 1fr));
-      gap: 12px;
-    }
-
-    .metric {
-      display: grid;
-      gap: 8px;
-      min-height: 144px;
-      padding: 16px;
-    }
-
-    .metric svg {
-      width: 30px;
-      height: 30px;
-      color: var(--leaf);
-    }
-
-    .metric-label {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 900;
-      text-transform: uppercase;
-    }
-
-    .metric-value {
-      margin: 0;
-      font-size: 29px;
-      font-weight: 900;
-      line-height: 1.05;
-    }
-
-    .metric-note {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
-
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .chart-box {
-      display: grid;
-      gap: 12px;
-      min-height: 292px;
-      padding: 16px;
-      overflow: hidden;
-    }
-
-    .chart-box.wide {
-      grid-column: 1 / -1;
-    }
-
-    .chart-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .chart-title h2 {
-      margin: 0;
-      font-size: 21px;
-      line-height: 1.12;
-    }
-
-    .chart-title span {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .bar-list {
-      display: grid;
-      gap: 11px;
-    }
-
-    .bar-row {
-      display: grid;
-      grid-template-columns: minmax(98px, 156px) minmax(0, 1fr) 110px;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .bar-label {
-      overflow-wrap: anywhere;
-      color: var(--ink);
-      font-weight: 900;
-    }
-
-    .bar-track {
-      height: 18px;
-      overflow: hidden;
-      background: #e8ede4;
-      border-radius: 8px;
-    }
-
-    .bar-fill {
-      height: 100%;
-      min-width: 2px;
-      background: var(--leaf);
-      border-radius: 8px;
-    }
-
-    .bar-value {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 900;
-      text-align: right;
-    }
-
-    .chart-svg {
-      width: 100%;
-      min-height: 216px;
-    }
-
-    .chart-svg text {
-      fill: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .diagnosis {
-      display: grid;
-      gap: 14px;
-      padding: 18px;
-      background: #fffdf7;
-    }
-
-    .diagnosis h2 {
-      margin: 0;
-      font-size: 26px;
-    }
-
-    .diagnosis p {
-      margin: 0;
-      color: #28382f;
-      font-size: 20px;
-      line-height: 1.48;
-    }
-
-    .security-card {
-      display: grid;
-      gap: 12px;
-      padding: 18px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .security-status {
-      display: grid;
-      grid-template-columns: 38px minmax(0, 1fr);
-      gap: 10px;
-      align-items: center;
-      padding: 10px;
-      border: 1px solid #cfe5d7;
-      border-radius: 8px;
-      background: var(--soft-good);
-    }
-
-    .security-status.warn {
-      border-color: #ead39d;
-      background: var(--soft-warn);
-    }
-
-    .security-status.bad {
-      border-color: #efc3bd;
-      background: var(--soft-bad);
-    }
-
-    .security-status svg {
-      width: 28px;
-      height: 28px;
-      color: var(--leaf);
-    }
-
-    .security-status.warn svg {
-      color: var(--warn);
-    }
-
-    .security-status.bad svg {
-      color: var(--bad);
-    }
-
-    .account-gate,
-    .producer-hub {
-      display: grid;
-      gap: 18px;
-    }
-
-    .login-hero,
-    .hub-top,
-    .record-form,
-    .analysis-panel,
-    .history-panel {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--white);
-    }
-
-    .login-hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
-      gap: 18px;
-      align-items: center;
-      padding: 22px;
-      overflow: hidden;
-    }
-
-    .login-copy {
-      display: grid;
-      gap: 14px;
-    }
-
-    .login-copy h1,
-    .hub-title h1 {
-      margin: 0;
-      font-size: clamp(34px, 5vw, 58px);
-      line-height: 1.04;
-    }
-
-    .login-copy p,
-    .hub-title p,
-    .analysis-panel p {
-      margin: 0;
+    .intro-copy p {
+      max-width: 720px;
+      margin: 14px 0 0;
       color: var(--muted);
       font-size: 17px;
-      line-height: 1.48;
+      line-height: 1.55;
     }
 
-    .login-actions {
-      display: grid;
-      gap: 12px;
-      align-content: start;
-      padding: 16px;
-      border-radius: 8px;
-      background: #f5f8f2;
-    }
-
-    .auth-switch {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .auth-switch .tab-btn {
-      justify-content: center;
-      width: 100%;
-      min-height: 44px;
-    }
-
-    .auth-form {
-      display: grid;
-      gap: 12px;
-    }
-
-    .secure-list {
+    .trust-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
+      padding: 0 26px 26px;
     }
 
-    .secure-list li {
-      display: grid;
-      grid-template-columns: 30px 1fr;
-      gap: 8px;
-      align-items: center;
-      min-height: 58px;
-      padding: 10px;
-      border-radius: 8px;
-      background: #f4f7f0;
-      color: var(--ink);
-      font-weight: 900;
-    }
-
-    .secure-list svg {
-      width: 24px;
-      height: 24px;
-      color: var(--leaf);
-    }
-
-    .hub-top {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 16px;
-      align-items: center;
-      padding: 18px;
-    }
-
-    .user-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 46px;
-      padding: 8px 12px;
+    .trust-item,
+    .metric-card,
+    .quick-impact,
+    .history-row,
+    .category-row {
+      background: var(--surface-3);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #f7f8f3;
-      color: var(--ink);
-      font-weight: 900;
+      border-radius: var(--radius);
     }
 
-    .user-chip img {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
+    .trust-item {
+      min-height: 110px;
+      padding: 14px;
     }
 
-    .tab-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+    .trust-item i {
+      color: var(--brand);
     }
 
-    .tab-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 48px;
-      padding: 11px 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--white);
+    .trust-item strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 15px;
+    }
+
+    .trust-item span {
+      display: block;
+      margin-top: 5px;
       color: var(--muted);
-      font-weight: 900;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .auth-card {
+      padding: 22px;
+    }
+
+    .auth-card h2 {
+      margin: 4px 0 8px;
+      font-size: 25px;
+    }
+
+    .auth-card > p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .tabs,
+    .mode-switch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      padding: 5px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .tab-btn,
+    .mode-btn {
+      min-height: 42px;
+      color: var(--muted);
+      background: transparent;
+      border-radius: var(--radius);
       cursor: pointer;
+      font-weight: 900;
     }
 
-    .tab-btn.active {
-      border-color: var(--leaf);
-      background: var(--soft-good);
-      color: var(--leaf-2);
+    .tab-btn.active,
+    .mode-btn.active {
+      color: #fff;
+      background: var(--brand);
     }
 
-    .tab-btn svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .record-form,
-    .analysis-panel,
-    .history-panel {
+    .form {
       display: grid;
-      gap: 16px;
-      padding: 18px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(160px, 1fr));
-      gap: 12px;
+      gap: 14px;
+      margin-top: 18px;
     }
 
     .field {
       display: grid;
       gap: 7px;
-    }
-
-    .field.full {
-      grid-column: 1 / -1;
+      min-width: 0;
     }
 
     .field label {
-      color: var(--muted);
+      color: var(--ink);
       font-size: 13px;
       font-weight: 900;
-      text-transform: uppercase;
     }
 
     .field input,
@@ -1042,475 +466,894 @@
     .field textarea {
       width: 100%;
       min-height: 48px;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+      padding: 0 12px;
       color: var(--ink);
-      background: var(--white);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
       outline: none;
     }
 
     .field textarea {
-      min-height: 92px;
+      min-height: 96px;
+      padding-top: 12px;
       resize: vertical;
     }
 
     .field input:focus,
     .field select:focus,
     .field textarea:focus {
-      border-color: var(--leaf);
-      box-shadow: 0 0 0 3px rgba(36, 107, 74, 0.12);
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(36, 107, 74, 0.14);
     }
 
-    .cost-form-grid {
+    .form-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(140px, 1fr));
-      gap: 10px;
-    }
-
-    .save-state {
-      min-height: 24px;
-      margin: 0;
-      color: var(--muted);
-      font-weight: 900;
-    }
-
-    .save-state.good {
-      color: var(--good);
-    }
-
-    .save-state.bad {
-      color: var(--bad);
-    }
-
-    .analysis-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
 
-    .insight-list {
-      display: grid;
-      gap: 10px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
+    .form-grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    .insight-list li {
-      display: grid;
-      grid-template-columns: 28px 1fr;
-      gap: 10px;
-      align-items: start;
-      padding: 12px;
-      border-radius: 8px;
-      background: #f7f8f3;
-      line-height: 1.42;
+    .full {
+      grid-column: 1 / -1;
     }
 
-    .insight-list svg {
-      width: 22px;
-      height: 22px;
-      color: var(--leaf);
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-    }
-
-    .data-table {
-      width: 100%;
-      min-width: 760px;
-      border-collapse: collapse;
-      background: var(--white);
-    }
-
-    .data-table th,
-    .data-table td {
-      padding: 12px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: top;
-    }
-
-    .data-table th {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-      background: #f4f7f0;
-    }
-
-    .data-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .empty-state {
-      display: grid;
-      place-items: center;
-      min-height: 220px;
-      padding: 24px;
-      border: 1px dashed #c8d6c7;
-      border-radius: 8px;
-      color: var(--muted);
-      text-align: center;
-      background: #f7f8f3;
-    }
-
-    .empty-state svg {
-      width: 46px;
-      height: 46px;
-      margin-bottom: 10px;
-      color: var(--leaf);
-    }
-
-    .danger-zone {
+    .form-actions,
+    .panel-actions,
+    .filter-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       align-items: center;
       justify-content: space-between;
-      padding: 12px;
-      border-radius: 8px;
-      background: var(--soft-bad);
+    }
+
+    .message {
+      min-height: 22px;
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .message.bad {
       color: var(--bad);
-      font-weight: 900;
+      font-weight: 800;
     }
 
-    .plain-link {
-      color: var(--leaf-2);
-      font-weight: 900;
+    .message.good {
+      color: var(--good);
+      font-weight: 800;
     }
 
-    .hidden {
-      display: none !important;
+    .workspace {
+      display: grid;
+      grid-template-columns: 288px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 14px;
+      display: grid;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .user-box {
+      display: flex;
+      gap: 11px;
+      align-items: center;
+      padding: 13px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--brand-2), var(--brand));
+      border-radius: var(--radius);
+    }
+
+    .user-box .avatar {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      color: #1f3b2e;
+      background: var(--sun);
+      border-radius: var(--radius);
+    }
+
+    .user-box strong,
+    .user-box span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-box span {
+      margin-top: 2px;
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 12px;
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .nav-btn {
+      justify-content: flex-start;
+      width: 100%;
+      padding: 0 12px;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid transparent;
+    }
+
+    .nav-btn.active {
+      color: #fff;
+      background: var(--brand);
+    }
+
+    .sidebar-note {
+      padding: 12px;
+      color: var(--muted);
+      background: var(--surface-3);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.42;
+    }
+
+    .work-panel {
+      min-width: 0;
+      padding: 18px;
+    }
+
+    .view-head {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .view-title h2 {
+      font-size: 27px;
+      line-height: 1.1;
+    }
+
+    .view-title p {
+      max-width: 720px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .metric-card {
+      min-height: 128px;
+      padding: 14px;
+    }
+
+    .metric-card .metric-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .metric-card .metric-value {
+      margin: 14px 0 0;
+      overflow-wrap: anywhere;
+      font-size: 25px;
+      font-weight: 900;
+      line-height: 1.08;
+    }
+
+    .metric-card .metric-note {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .metric-card.good .metric-value,
+    .trend-up {
+      color: var(--good);
+    }
+
+    .metric-card.bad .metric-value,
+    .trend-down {
+      color: var(--bad);
+    }
+
+    .metric-card.warn .metric-value,
+    .trend-flat {
+      color: var(--warn);
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .panel-grid.equal {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .panel {
+      min-width: 0;
+      padding: 16px;
+    }
+
+    .panel-title {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 13px;
+    }
+
+    .panel-title h3 {
+      font-size: 20px;
+      line-height: 1.15;
+    }
+
+    .panel-title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .quick-impact {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .quick-impact i {
+      color: var(--brand);
+    }
+
+    .quick-impact strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .quick-impact span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip-btn {
+      min-height: 36px;
+      padding: 0 10px;
+      color: var(--ink);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .chart {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(96px, 0.8fr) minmax(120px, 2fr) minmax(82px, auto);
+      gap: 10px;
+      align-items: center;
+      min-height: 36px;
+    }
+
+    .bar-label {
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bar-track {
+      height: 13px;
+      overflow: hidden;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .bar-fill {
+      display: block;
+      height: 100%;
+      min-width: 3px;
+      background: var(--brand);
+      border-radius: 999px;
+    }
+
+    .bar-fill.blue {
+      background: var(--blue);
+    }
+
+    .bar-fill.sun {
+      background: var(--sun);
+    }
+
+    .bar-fill.red {
+      background: var(--red);
+    }
+
+    .bar-value {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .mini-svg {
+      width: 100%;
+      min-height: 210px;
+      background: var(--surface-3);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .empty {
+      display: grid;
+      min-height: 220px;
+      place-items: center;
+      padding: 24px;
+      color: var(--muted);
+      text-align: center;
+      background: var(--surface-3);
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+    }
+
+    .empty h3 {
+      margin: 10px 0 6px;
+      color: var(--ink);
+    }
+
+    .empty p {
+      max-width: 520px;
+      margin: 0 auto 14px;
+      line-height: 1.45;
+    }
+
+    .filter-row {
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    .filter-row .field {
+      flex: 1 1 160px;
+    }
+
+    .history-list,
+    .category-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .history-row,
+    .category-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+    }
+
+    .row-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      color: var(--brand-2);
+      background: var(--surface-2);
+      border-radius: var(--radius);
+    }
+
+    .row-main {
+      min-width: 0;
+    }
+
+    .row-main strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .row-main span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .row-value {
+      display: grid;
+      justify-items: end;
+      gap: 8px;
+    }
+
+    .row-value strong {
+      white-space: nowrap;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .small-icon {
+      display: inline-grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .small-icon.danger {
+      color: var(--bad);
+    }
+
+    .calc-result {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .scenario {
+      padding: 12px;
+      background: var(--surface-3);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .scenario span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .scenario strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 20px;
+    }
+
+    .terms-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(10, 16, 12, 0.72);
+    }
+
+    .terms-card {
+      width: min(760px, 100%);
+      max-height: min(760px, calc(100vh - 36px));
+      overflow: auto;
+      padding: 22px;
+    }
+
+    .terms-card h2 {
+      font-size: 26px;
+    }
+
+    .terms-card p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .terms-list {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .terms-line {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 11px;
+      background: var(--surface-3);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .terms-line i {
+      margin-top: 1px;
+      color: var(--brand);
+    }
+
+    .check-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      margin-top: 12px;
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    .check-row input {
+      width: 20px;
+      height: 20px;
+      margin-top: 1px;
+      accent-color: var(--brand);
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 20;
+      width: min(380px, calc(100% - 36px));
+      padding: 14px;
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .toast span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
     }
 
     @media (max-width: 980px) {
-      .app {
+      .topbar,
+      .auth-view,
+      .workspace,
+      .panel-grid,
+      .panel-grid.equal {
         grid-template-columns: 1fr;
       }
 
-      .side {
+      .sidebar {
+        position: static;
+      }
+
+      .nav-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .auth-intro {
         min-height: auto;
-      }
-
-      .side-photo,
-      .side-status {
-        display: none;
-      }
-
-      .choice-grid,
-      .metric-grid,
-      .charts-grid,
-      .secure-list,
-      .form-grid,
-      .cost-form-grid,
-      .analysis-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .chart-box.wide {
-        grid-column: auto;
-      }
-
-      .login-hero,
-      .hub-top {
-        grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 620px) {
-      .app {
-        width: min(100% - 16px, 1180px);
-        margin: 8px auto;
+    @media (max-width: 680px) {
+      .app-shell {
+        width: min(100% - 18px, 1220px);
+        padding-top: 9px;
       }
 
-      .main,
-      .brand,
-      .market {
-        padding: 16px;
-      }
-
-      .logo {
-        font-size: 24px;
-      }
-
-      .question-title strong {
-        font-size: 34px;
-      }
-
-      .choice-card {
-        min-height: 150px;
-      }
-
-      .input-shell {
-        grid-template-columns: 60px minmax(0, 1fr) 60px;
-      }
-
-      .step-btn {
-        min-height: 92px;
-      }
-
-      .answer-input {
-        font-size: 44px;
-      }
-
-      .result-hero {
+      .market-strip,
+      .trust-grid,
+      .metric-grid,
+      .form-grid,
+      .form-grid.three,
+      .scenario-grid,
+      .nav-list {
         grid-template-columns: 1fr;
+      }
+
+      .brand h1 {
+        font-size: 21px;
+      }
+
+      .intro-copy h2,
+      .view-title h2 {
+        font-size: 25px;
+      }
+
+      .view-head,
+      .panel-title,
+      .form-actions,
+      .panel-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .primary,
+      .secondary,
+      .ghost,
+      .danger-btn {
+        width: 100%;
+      }
+
+      .history-row,
+      .category-row {
+        grid-template-columns: auto minmax(0, 1fr);
+      }
+
+      .row-value {
+        grid-column: 1 / -1;
+        justify-items: stretch;
+      }
+
+      .row-actions {
+        justify-content: stretch;
+      }
+
+      .small-icon {
+        flex: 1 1 auto;
       }
 
       .bar-row {
         grid-template-columns: 1fr;
+        gap: 5px;
       }
 
       .bar-value {
         text-align: left;
       }
     }
-
-    @media print {
-      body {
-        background: var(--white);
-      }
-
-      .side,
-      .nav-row,
-      .hero-actions,
-      .progress-wrap {
-        display: none;
-      }
-
-      .app,
-      .main {
-        display: block;
-        width: auto;
-        min-height: auto;
-        margin: 0;
-        padding: 0;
-        box-shadow: none;
-        border: 0;
-      }
-
-      .chart-box,
-      .metric,
-      .diagnosis,
-      .result-hero {
-        break-inside: avoid;
-      }
-    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <aside class="side" aria-label="Resumo do CafeCalc">
-      <div class="brand">
-        <div class="brand-row">
-          <div class="logo">
-            <span class="logo-mark"><i data-lucide="coffee"></i></span>
-            <span>CafeCalc</span>
-          </div>
-          <button class="audio-btn" id="repeatAudio" type="button" aria-label="Ouvir novamente">
-            <i data-lucide="volume-2"></i>
-          </button>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="CafeCalc Rural">
+        <div class="brand-mark"><i data-lucide="sprout"></i></div>
+        <div>
+          <h1>CafeCalc Rural</h1>
+          <p>Gestão financeira simples para a safra de café</p>
         </div>
-        <p class="brand-sub">Custo, lucro, produtividade e risco de preço para a lavoura de café.</p>
       </div>
 
-      <div class="side-photo" role="img" aria-label="Imagem de café colhido na fazenda"></div>
-
-      <section class="market" aria-label="Mercado do café">
-        <div class="market-head">
-          <p class="eyebrow">Mercado</p>
-          <span class="source-state warn" id="sourceState">
-            <i data-lucide="cloud"></i>
-            carregando
-          </span>
+      <div class="market-strip" aria-live="polite">
+        <div class="market-item">
+          <span>Arábica hoje</span>
+          <strong id="marketArabica">Carregando</strong>
         </div>
-
-        <div class="price-grid">
-          <div class="price-tile">
-            <p class="price-label">Arábica</p>
-            <p class="price-value" id="arabicaPrice">R$ --</p>
-          </div>
-          <div class="price-tile">
-            <p class="price-label">Conilon</p>
-            <p class="price-value" id="conillonPrice">R$ --</p>
-          </div>
+        <div class="market-item">
+          <span>Conilon hoje</span>
+          <strong id="marketConillon">Carregando</strong>
         </div>
-
-        <p class="market-note" id="marketNote">Valores por saca. O preço local pode mudar por bebida, qualidade, peneira, frete e comprador.</p>
-      </section>
-
-      <section class="security-card" aria-label="Conta do produtor">
-        <p class="eyebrow">Conta do produtor</p>
-        <div class="security-status warn" id="authMini">
-          <i data-lucide="lock-keyhole"></i>
-          <div>
-            <p class="mini-title">Sem login</p>
-            <p class="mini-text">Entre para salvar dados da fazenda.</p>
-          </div>
+        <div class="market-item">
+          <span>Tendência</span>
+          <strong id="marketTrend">Atualizando</strong>
         </div>
-        <button class="secondary" id="openHubBtn" type="button">
-          <i data-lucide="shield-check"></i>
-          Área do produtor
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-btn" id="themeBtn" type="button" aria-label="Alternar modo claro e escuro" title="Alternar tema">
+          <i data-lucide="moon"></i>
         </button>
-      </section>
+      </div>
+    </header>
 
-      <section class="side-status" aria-label="Pontos calculados">
-        <p class="eyebrow">O que sai no final</p>
-        <ul class="mini-list">
-          <li>
-            <i data-lucide="badge-dollar-sign"></i>
-            <div>
-              <p class="mini-title">Preço de equilíbrio</p>
-              <p class="mini-text">A saca mínima para pagar os custos.</p>
-            </div>
-          </li>
-          <li>
-            <i data-lucide="chart-no-axes-combined"></i>
-            <div>
-              <p class="mini-title">Gráficos da fazenda</p>
-              <p class="mini-text">Custos, produtividade, lucro e risco.</p>
-            </div>
-          </li>
-          <li>
-            <i data-lucide="speech"></i>
-            <div>
-              <p class="mini-title">Leitura em voz alta</p>
-              <p class="mini-text">As perguntas podem ser ouvidas.</p>
-            </div>
-          </li>
-        </ul>
-      </section>
-    </aside>
-
-    <main class="main">
-      <div class="workspace">
-        <section class="question-panel" id="wizard" aria-live="polite">
-          <div class="progress-wrap">
-            <div class="progress-top">
-              <span id="stepCounter">Pergunta 1</span>
-              <span id="stepHint">CafeCalc Rural</span>
-            </div>
-            <div class="progress-line" aria-hidden="true">
-              <div class="progress-fill" id="progressFill"></div>
-            </div>
+    <main>
+      <section class="auth-view" id="authView">
+        <div class="auth-intro">
+          <div class="intro-photo" role="img" aria-label="Lavoura de café"></div>
+          <div class="intro-copy">
+            <p class="eyebrow">Universidade Federal de Lavras, Campus Paraíso</p>
+            <h2>Uma área do produtor feita para acompanhar a safra no ritmo do campo.</h2>
+            <p>Registre compras, gastos e investimentos do dia a dia. O CafeCalc recalcula custos, lucro previsto, margem e impacto do mercado automaticamente.</p>
           </div>
-
-          <div class="question-icon" id="questionIcon" aria-hidden="true">
-            <i data-lucide="coffee"></i>
-          </div>
-
-          <h1 class="question-title">
-            <span id="questionKicker">Começo</span>
-            <strong id="questionText">Qual café você quer calcular?</strong>
-          </h1>
-
-          <div id="answerArea"></div>
-          <p class="error" id="errorText">Informe um valor válido.</p>
-
-          <div class="nav-row">
-            <button class="ghost" id="backBtn" type="button">
-              <i data-lucide="arrow-left"></i>
-              Voltar
-            </button>
-            <div class="unit-row">
-              <button class="secondary" id="speakBtn" type="button">
-                <i data-lucide="volume-2"></i>
-                Ouvir
-              </button>
-              <button class="primary" id="nextBtn" type="button">
-                Avançar
-                <i data-lucide="arrow-right"></i>
-              </button>
+          <div class="trust-grid">
+            <div class="trust-item">
+              <i data-lucide="lock-keyhole"></i>
+              <strong>Dados protegidos</strong>
+              <span>Lançamentos financeiros são criptografados antes de serem armazenados.</span>
             </div>
-          </div>
-        </section>
-
-        <section class="results" id="results" aria-live="polite"></section>
-
-        <section class="account-gate hidden" id="accountGate" aria-live="polite">
-          <div class="login-hero">
-            <div class="login-copy">
-              <p class="eyebrow">Área segura</p>
-              <h1>Dados da fazenda guardados por produtor.</h1>
-              <p>A entrada por perguntas continua sendo o começo. Depois, o produtor pode lançar gastos, produção, preço de venda e observações sempre que precisar.</p>
-              <ul class="secure-list">
-                <li><i data-lucide="key-round"></i><span>Senha do site</span></li>
-                <li><i data-lucide="database-zap"></i><span>Planilha privada</span></li>
-                <li><i data-lucide="eye-off"></i><span>Filtro por produtor</span></li>
-              </ul>
-            </div>
-            <div class="login-actions">
-              <p class="mini-title">Entrar na conta</p>
-              <div class="auth-switch" role="tablist" aria-label="Escolha entrar ou criar conta">
-                <button class="tab-btn active" type="button" data-auth-mode="login">Entrar</button>
-                <button class="tab-btn" type="button" data-auth-mode="register">Criar conta</button>
-              </div>
-              <form class="auth-form" id="authForm" novalidate>
-                <div class="field hidden" id="authNameField">
-                  <label for="authName">Nome</label>
-                  <input id="authName" name="name" type="text" autocomplete="name" maxlength="100" placeholder="Nome do produtor">
-                </div>
-                <div class="field">
-                  <label for="authEmail">E-mail</label>
-                  <input id="authEmail" name="email" type="email" autocomplete="email" required placeholder="produtor@email.com">
-                </div>
-                <div class="field">
-                  <label for="authPassword">Senha</label>
-                  <input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="Mínimo 8 caracteres">
-                </div>
-                <p class="save-state" id="loginHelp">A senha fica protegida por hash na planilha. Cada produtor só carrega os próprios lançamentos.</p>
-                <button class="primary" id="authSubmitBtn" type="submit">
-                  <i data-lucide="log-in"></i>
-                  Entrar
-                </button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <section class="producer-hub hidden" id="producerHub" aria-live="polite">
-          <div class="hub-top">
-            <div class="hub-title">
-              <p class="eyebrow">Caderno da fazenda</p>
-              <h1>Área do produtor</h1>
-              <p id="hubSubtitle">Salve lançamentos e acompanhe a lavoura ao longo do tempo.</p>
-            </div>
-            <div class="user-chip" id="userChip">
-              <i data-lucide="user-round-check"></i>
-              <span>Produtor</span>
-            </div>
-          </div>
-
-          <div class="tab-row" role="tablist" aria-label="Área do produtor">
-            <button class="tab-btn active" type="button" data-hub-tab="record">
-              <i data-lucide="plus-circle"></i>
-              Lançar dados
-            </button>
-            <button class="tab-btn" type="button" data-hub-tab="analysis">
+            <div class="trust-item">
               <i data-lucide="chart-no-axes-combined"></i>
-              Análise
+              <strong>Visão simples</strong>
+              <span>Gráficos claros para custo, lucro, fluxo e categorias da safra.</span>
+            </div>
+            <div class="trust-item">
+              <i data-lucide="smartphone"></i>
+              <strong>Uso rápido</strong>
+              <span>Botões grandes, modo claro e escuro, e telas pensadas para celular.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-card">
+          <p class="eyebrow">Acesso do produtor</p>
+          <h2>Entre para abrir sua safra</h2>
+          <p>Use sua conta para manter os lançamentos sincronizados e acessíveis apenas no seu ambiente autenticado.</p>
+
+          <div class="tabs" role="tablist" aria-label="Acesso">
+            <button class="tab-btn active" type="button" data-auth-mode="login">Entrar</button>
+            <button class="tab-btn" type="button" data-auth-mode="register">Criar conta</button>
+          </div>
+
+          <form class="form" id="authForm" novalidate>
+            <div class="field hidden" id="authNameField">
+              <label for="authName">Nome do produtor</label>
+              <input id="authName" name="name" type="text" autocomplete="name" maxlength="100" placeholder="Ex.: Maria Aparecida">
+            </div>
+            <div class="field">
+              <label for="authEmail">E-mail</label>
+              <input id="authEmail" name="email" type="email" autocomplete="email" required placeholder="produtor@email.com">
+            </div>
+            <div class="field">
+              <label for="authPassword">Senha</label>
+              <input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="Mínimo 8 caracteres">
+            </div>
+            <p class="message" id="authMessage">Ao entrar, sua senha abre a chave local que permite ler seus próprios lançamentos.</p>
+            <button class="primary" id="authSubmit" type="submit">
+              <i data-lucide="log-in"></i>
+              Entrar
             </button>
-            <button class="tab-btn" type="button" data-hub-tab="history">
-              <i data-lucide="table-properties"></i>
+          </form>
+        </div>
+      </section>
+
+      <section class="workspace hidden" id="workspace">
+        <aside class="sidebar" aria-label="Navegação da Área do Produtor">
+          <div class="user-box">
+            <div class="avatar"><i data-lucide="user-round-check"></i></div>
+            <div>
+              <strong id="userName">Produtor</strong>
+              <span id="userEmail">conta protegida</span>
+            </div>
+          </div>
+
+          <nav class="nav-list">
+            <button class="nav-btn active" type="button" data-view="daily">
+              <i data-lucide="calendar-plus"></i>
+              Controle diário
+            </button>
+            <button class="nav-btn" type="button" data-view="history">
+              <i data-lucide="list-filter"></i>
               Histórico
             </button>
+            <button class="nav-btn" type="button" data-view="complete">
+              <i data-lucide="calculator"></i>
+              Cálculo completo
+            </button>
+            <button class="nav-btn" type="button" data-view="categories">
+              <i data-lucide="tags"></i>
+              Categorias
+            </button>
+          </nav>
+
+          <div class="sidebar-note">
+            <strong id="marketUpdated">Mercado em atualização</strong>
+            <span id="marketNote">Os valores de café serão usados nas projeções da safra.</span>
           </div>
 
-          <div id="hubContent"></div>
+          <button class="secondary" id="logoutBtn" type="button">
+            <i data-lucide="log-out"></i>
+            Sair
+          </button>
+        </aside>
+
+        <section class="work-panel">
+          <div class="mode-switch" aria-label="Modos principais">
+            <button class="mode-btn active" type="button" data-view="daily">Controle financeiro diário</button>
+            <button class="mode-btn" type="button" data-view="complete">Cálculo completo único</button>
+          </div>
+          <div id="viewContent"></div>
         </section>
-      </div>
+      </section>
     </main>
   </div>
+
+  <div class="terms-modal hidden" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+    <div class="terms-card">
+      <p class="eyebrow">Termo de uso e privacidade</p>
+      <h2 id="termsTitle">Compromisso com o produtor rural</h2>
+      <p>Este aplicativo integra um projeto social e acadêmico da Universidade Federal de Lavras, desenvolvido no Campus Paraíso, para apoiar produtores rurais com tecnologia acessível e inteligência financeira aplicada ao café.</p>
+
+      <div class="terms-list">
+        <div class="terms-line">
+          <i data-lucide="shield-check"></i>
+          <span>Seus dados pessoais e financeiros são protegidos por criptografia antes do armazenamento.</span>
+        </div>
+        <div class="terms-line">
+          <i data-lucide="ban"></i>
+          <span>Os dados não são vendidos, comercializados, compartilhados publicamente ou usados para fins comerciais.</span>
+        </div>
+        <div class="terms-line">
+          <i data-lucide="eye-off"></i>
+          <span>Informações financeiras individuais não são publicadas e não ficam disponíveis para consulta direta pelos desenvolvedores.</span>
+        </div>
+        <div class="terms-line">
+          <i data-lucide="graduation-cap"></i>
+          <span>Dados anônimos e estatísticos podem apoiar pesquisa acadêmica, melhoria do projeto e estudos da UFLA.</span>
+        </div>
+      </div>
+
+      <p>As métricas acadêmicas autorizadas são gerais, como número de usuários, região, faixa etária, satisfação, quantidade de operações e uso agregado da plataforma. Nenhum dado pessoal identificável, nenhuma informação individual e nenhum lançamento financeiro específico serão divulgados.</p>
+
+      <label class="check-row">
+        <input id="termsRequired" type="checkbox">
+        <span>Li e concordo com o Termo de Uso e Privacidade, incluindo o tratamento protegido dos meus dados para funcionamento do aplicativo.</span>
+      </label>
+      <label class="check-row">
+        <input id="termsStats" type="checkbox" checked>
+        <span>Autorizo o uso exclusivamente acadêmico de dados anônimos e estatísticos para melhoria do projeto e estudos da Universidade Federal de Lavras.</span>
+      </label>
+      <p class="message bad hidden" id="termsError">Para usar o aplicativo, é necessário concordar com o termo principal.</p>
+      <div class="form-actions" style="margin-top: 18px;">
+        <span class="message">Você pode usar o CafeCalc somente após aceitar o termo.</span>
+        <button class="primary" id="acceptTermsBtn" type="button">
+          <i data-lucide="check-circle-2"></i>
+          Concordar e continuar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" aria-live="polite"></div>
 
   <script>
     const MARKET_URL = "https://raw.githubusercontent.com/opedromartinss/cotacoes-cafe/main/data/precos.json";
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw521BJUFg11TTgIZ9QpxhZH_TTkW7RpaOj8kpNRqPOb7xx4RIcg7hMdSsdMfgH92gpLQ/exec";
-    const AUTH_SESSION_KEY = "cafecalc.session.v1";
+    const TERMS_KEY = "cafecalc.terms.v2";
+    const THEME_KEY = "cafecalc.theme.v2";
+    const SESSION_HINT_KEY = "cafecalc.sessionHint.v2";
+    const CRYPTO_VERSION = "client-aes-gcm-v2";
 
     const fallbackMarketRows = [
       { referente_a: "12/05/2026", coletado_em: "2026-05-12T08:23:52.098215", produto: "cafe", tipo: "arabica", valor: 1716.30, unidade: "saca", moeda: "BRL" },
@@ -1522,217 +1365,506 @@
     ];
 
     const coffeeTypes = [
-      {
-        id: "arabica",
-        base: "arabica",
-        factor: 1,
-        label: "Arábica tipo 6",
-        short: "Arábica",
-        icon: "coffee",
-        text: "Referência comum de mercado.",
-        low: 20,
-        good: 35
-      },
-      {
-        id: "arabica_cd",
-        base: "arabica",
-        factor: 1.08,
-        label: "Cereja descascado",
-        short: "CD",
-        icon: "sparkles",
-        text: "Estimativa com prêmio por preparo.",
-        low: 20,
-        good: 35
-      },
-      {
-        id: "arabica_especial",
-        base: "arabica",
-        factor: 1.18,
-        label: "Arábica especial",
-        short: "Especial",
-        icon: "award",
-        text: "Estimativa com prêmio de qualidade.",
-        low: 18,
-        good: 32
-      },
-      {
-        id: "arabica_natural",
-        base: "arabica",
-        factor: 0.98,
-        label: "Arábica natural",
-        short: "Natural",
-        icon: "sun",
-        text: "Referência próxima do arábica base.",
-        low: 20,
-        good: 35
-      },
-      {
-        id: "conillon",
-        base: "conillon",
-        factor: 1,
-        label: "Conilon / robusta",
-        short: "Conilon",
-        icon: "sprout",
-        text: "Referência de mercado conilon.",
-        low: 35,
-        good: 65
-      },
-      {
-        id: "conillon_especial",
-        base: "conillon",
-        factor: 1.12,
-        label: "Conilon especial",
-        short: "Conilon especial",
-        icon: "medal",
-        text: "Estimativa com prêmio de qualidade.",
-        low: 35,
-        good: 65
-      }
+      { id: "arabica", base: "arabica", factor: 1, label: "Arábica tipo 6", short: "Arábica" },
+      { id: "arabica_cd", base: "arabica", factor: 1.08, label: "Cereja descascado", short: "CD" },
+      { id: "arabica_especial", base: "arabica", factor: 1.18, label: "Arábica especial", short: "Especial" },
+      { id: "arabica_natural", base: "arabica", factor: 0.98, label: "Arábica natural", short: "Natural" },
+      { id: "conillon", base: "conillon", factor: 1, label: "Conilon / robusta", short: "Conilon" },
+      { id: "conillon_especial", base: "conillon", factor: 1.12, label: "Conilon especial", short: "Conilon esp." }
     ];
 
-    const costFields = [
-      { id: "labor", label: "Mão de obra", icon: "users", question: "Quanto gastou com gente trabalhando?", quick: [0, 500, 1000, 5000] },
-      { id: "fertilizer", label: "Adubo e calcário", icon: "wheat", question: "Quanto gastou com adubo, calcário e corretivos?", quick: [0, 500, 2000, 8000] },
-      { id: "defensive", label: "Defensivos", icon: "shield-check", question: "Quanto gastou com defensivos?", quick: [0, 300, 1000, 3000] },
-      { id: "harvest", label: "Colheita e pós-colheita", icon: "hand-coins", question: "Quanto gastou na colheita e no pós-colheita?", quick: [0, 1000, 5000, 10000] },
-      { id: "machine", label: "Máquinas e diesel", icon: "tractor", question: "Quanto gastou com máquinas, trator e diesel?", quick: [0, 500, 2000, 6000] },
-      { id: "drying", label: "Secagem e beneficiamento", icon: "warehouse", question: "Quanto gastou com secagem e beneficiamento?", quick: [0, 500, 1500, 4000] },
-      { id: "transport", label: "Transporte e comissão", icon: "truck", question: "Quanto gastou com transporte, sacaria, comissão e taxas?", quick: [0, 300, 1000, 3000] },
-      { id: "other", label: "Outros custos", icon: "receipt-text", question: "Teve outros custos?", quick: [0, 200, 1000, 3000] }
+    const defaultCategories = [
+      { id: "compras", label: "Compras", icon: "shopping-cart", flow: "cost" },
+      { id: "defensivos", label: "Defensivos agrícolas", icon: "shield-check", flow: "cost" },
+      { id: "fertilizantes", label: "Fertilizantes", icon: "wheat", flow: "cost" },
+      { id: "mao_obra", label: "Mão de obra", icon: "users", flow: "cost" },
+      { id: "combustivel", label: "Combustível", icon: "fuel", flow: "cost" },
+      { id: "maquinario", label: "Maquinário", icon: "tractor", flow: "investment" },
+      { id: "manutencao", label: "Manutenção", icon: "wrench", flow: "cost" },
+      { id: "transporte", label: "Transporte", icon: "truck", flow: "cost" },
+      { id: "irrigacao", label: "Irrigação", icon: "waves", flow: "cost" },
+      { id: "colheita", label: "Colheita e pós-colheita", icon: "hand-coins", flow: "cost" },
+      { id: "outros", label: "Outros custos", icon: "receipt-text", flow: "cost" },
+      { id: "receita", label: "Receita ou venda", icon: "circle-dollar-sign", flow: "income" }
     ];
 
-    const steps = [
-      { id: "coffeeType", kind: "choice", icon: "coffee", kicker: "Tipo de café", question: "Qual café você quer calcular?" },
-      { id: "price", kind: "price", icon: "badge-dollar-sign", kicker: "Preço da saca", question: "Qual preço da saca você quer usar?" },
-      { id: "bags", kind: "number", icon: "package-check", kicker: "Produção", question: "Quantas sacas de 60 kg você colheu?", unit: "sacas", min: 0.01, step: 1, quick: [10, 50, 100, 500] },
-      { id: "hectares", kind: "number", icon: "map", kicker: "Área", question: "Quantos hectares de café entraram nessa conta?", unit: "hectares", min: 0.01, step: 0.5, quick: [1, 2, 5, 10] },
-      ...costFields.map((field) => ({
-        id: field.id,
-        kind: "number",
-        icon: field.icon,
-        kicker: "Custos",
-        question: field.question,
-        unit: "reais",
-        min: 0,
-        step: 100,
-        quick: field.quick
-      }))
-    ];
+    const planCostFields = defaultCategories.filter((item) => item.flow !== "income");
 
-    const answers = {
-      coffeeType: "arabica",
-      price: 0,
-      bags: "",
-      hectares: "",
-      labor: 0,
-      fertilizer: 0,
-      defensive: 0,
-      harvest: 0,
-      machine: 0,
-      drying: 0,
-      transport: 0,
-      other: 0
-    };
+    const qs = (selector, root = document) => root.querySelector(selector);
+    const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
-    let currentStep = 0;
-    let latestSpeech = "";
-    let market = normalizeMarket(fallbackMarketRows, false);
-    let currentView = "wizard";
-    const accountState = {
+    const state = {
       user: null,
       token: "",
+      cryptoKey: null,
       records: [],
-      mode: "none",
-      activeTab: "record",
-      lastError: ""
+      view: "daily",
+      authMode: "login",
+      message: "",
+      filters: {
+        start: "",
+        end: "",
+        category: "all",
+        text: ""
+      },
+      editingRecord: null,
+      lastImpact: null
     };
-    let authMode = "login";
 
-    const wizard = document.getElementById("wizard");
-    const results = document.getElementById("results");
-    const accountGate = document.getElementById("accountGate");
-    const producerHub = document.getElementById("producerHub");
-    const hubContent = document.getElementById("hubContent");
-    const authMini = document.getElementById("authMini");
-    const openHubBtn = document.getElementById("openHubBtn");
-    const authForm = document.getElementById("authForm");
-    const authNameField = document.getElementById("authNameField");
-    const authSubmitBtn = document.getElementById("authSubmitBtn");
-    const loginHelp = document.getElementById("loginHelp");
-    const authModeButtons = document.querySelectorAll("[data-auth-mode]");
-    const userChip = document.getElementById("userChip");
-    const hubSubtitle = document.getElementById("hubSubtitle");
-    const answerArea = document.getElementById("answerArea");
-    const questionText = document.getElementById("questionText");
-    const questionKicker = document.getElementById("questionKicker");
-    const questionIcon = document.getElementById("questionIcon");
-    const stepCounter = document.getElementById("stepCounter");
-    const stepHint = document.getElementById("stepHint");
-    const progressFill = document.getElementById("progressFill");
-    const errorText = document.getElementById("errorText");
-    const backBtn = document.getElementById("backBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const speakBtn = document.getElementById("speakBtn");
-    const repeatAudio = document.getElementById("repeatAudio");
+    let market = normalizeMarket(fallbackMarketRows, false);
+    let toastTimer = null;
 
-    function money(value, compact = false) {
-      const options = compact && Math.abs(value) >= 100000
-        ? { style: "currency", currency: "BRL", notation: "compact", maximumFractionDigits: 1 }
-        : { style: "currency", currency: "BRL", maximumFractionDigits: 0 };
-      return new Intl.NumberFormat("pt-BR", options).format(Number.isFinite(value) ? value : 0);
-    }
-
-    function moneyCents(value) {
-      return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 }).format(Number.isFinite(value) ? value : 0);
+    function money(value, digits = 0) {
+      return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+      }).format(Number.isFinite(Number(value)) ? Number(value) : 0);
     }
 
     function numberBR(value, digits = 1) {
-      return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: digits }).format(Number.isFinite(value) ? value : 0);
+      return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: digits }).format(Number.isFinite(Number(value)) ? Number(value) : 0);
     }
 
-    function parseDateBR(value) {
-      if (!value) return new Date(0);
-      if (value.includes("/")) {
-        const [day, month, year] = value.split("/").map(Number);
-        return new Date(year, month - 1, day);
+    function percentBR(value) {
+      return `${numberBR((Number(value) || 0) * 100, 1)}%`;
+    }
+
+    function todayISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replaceAll("`", "&#096;");
+    }
+
+    function makeId(prefix = "rec") {
+      if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
+      return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    }
+
+    function slugify(value) {
+      return String(value || "categoria")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 48) || "categoria";
+    }
+
+    function refreshIcons() {
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function applyTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      const theme = saved || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.dataset.theme = theme;
+      qs("#themeBtn").innerHTML = `<i data-lucide="${theme === "dark" ? "sun" : "moon"}"></i>`;
+      refreshIcons();
+    }
+
+    function toggleTheme() {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme();
+    }
+
+    function initTerms() {
+      const accepted = localStorage.getItem(TERMS_KEY);
+      qs("#termsModal").classList.toggle("hidden", Boolean(accepted));
+    }
+
+    function acceptTerms() {
+      if (!qs("#termsRequired").checked) {
+        qs("#termsError").classList.remove("hidden");
+        return;
       }
-      return new Date(value);
+      localStorage.setItem(TERMS_KEY, JSON.stringify({
+        acceptedAt: new Date().toISOString(),
+        academicStats: qs("#termsStats").checked
+      }));
+      qs("#termsModal").classList.add("hidden");
+      toast("Bem-vindo ao CafeCalc", "Agora você pode acessar a Área do Produtor com segurança.");
     }
 
-    function normalizeType(type) {
-      return type === "conillon" || type === "robusta" ? "conillon" : "arabica";
+    function bindGlobalEvents() {
+      qs("#themeBtn").addEventListener("click", toggleTheme);
+      qs("#acceptTermsBtn").addEventListener("click", acceptTerms);
+      qs("#authForm").addEventListener("submit", submitAuth);
+      qs("#logoutBtn").addEventListener("click", logout);
+
+      qsa("[data-auth-mode]").forEach((button) => {
+        button.addEventListener("click", () => setAuthMode(button.dataset.authMode));
+      });
+
+      qsa("[data-view]").forEach((button) => {
+        button.addEventListener("click", () => showWorkspace(button.dataset.view));
+      });
+    }
+
+    function setAuthMode(mode) {
+      state.authMode = mode === "register" ? "register" : "login";
+      qsa("[data-auth-mode]").forEach((button) => button.classList.toggle("active", button.dataset.authMode === state.authMode));
+      qs("#authNameField").classList.toggle("hidden", state.authMode !== "register");
+      qs("#authName").required = state.authMode === "register";
+      qs("#authPassword").autocomplete = state.authMode === "register" ? "new-password" : "current-password";
+      qs("#authSubmit").innerHTML = state.authMode === "register"
+        ? `<i data-lucide="user-plus"></i>Criar conta`
+        : `<i data-lucide="log-in"></i>Entrar`;
+      qs("#authMessage").className = "message";
+      qs("#authMessage").textContent = state.authMode === "register"
+        ? "Crie uma senha forte. Ela será usada para proteger seus lançamentos financeiros."
+        : "Ao entrar, sua senha abre a chave local que permite ler seus próprios lançamentos.";
+      refreshIcons();
+    }
+
+    async function submitAuth(event) {
+      event.preventDefault();
+      const form = qs("#authForm");
+      if (!form.reportValidity()) return;
+
+      if (!window.crypto?.subtle) {
+        showAuthMessage("Este navegador não oferece criptografia segura. Atualize o navegador para usar a Área do Produtor.", "bad");
+        return;
+      }
+
+      const data = new FormData(form);
+      const payload = {
+        name: String(data.get("name") || "").trim(),
+        email: String(data.get("email") || "").trim(),
+        password: String(data.get("password") || "")
+      };
+
+      qs("#authSubmit").disabled = true;
+      qs("#authSubmit").innerHTML = `<i data-lucide="loader-circle"></i>${state.authMode === "register" ? "Criando..." : "Entrando..."}`;
+      refreshIcons();
+      showAuthMessage("Abrindo sua conta protegida...");
+
+      try {
+        const result = await backendCall(state.authMode === "register" ? "register" : "login", payload, false);
+        state.cryptoKey = await deriveRecordKey(payload.email, payload.password);
+        state.user = result.user || { name: "Produtor", email: "conta protegida" };
+        state.token = result.sessionToken;
+        sessionStorage.setItem(SESSION_HINT_KEY, JSON.stringify({ email: payload.email, name: state.user.name }));
+        await loadProducerRecords();
+        form.reset();
+        setAuthMode("login");
+        updateUserUi();
+        qs("#authView").classList.add("hidden");
+        qs("#workspace").classList.remove("hidden");
+        showWorkspace("daily");
+        toast("Conta aberta", "Seus dados financeiros foram descriptografados somente neste navegador.");
+      } catch (error) {
+        showAuthMessage(error.message || "Não foi possível entrar. Confira os dados e tente novamente.", "bad");
+      } finally {
+        qs("#authSubmit").disabled = false;
+        setAuthMode(state.authMode);
+      }
+    }
+
+    function showAuthMessage(message, type = "") {
+      qs("#authMessage").textContent = message;
+      qs("#authMessage").className = `message ${type}`.trim();
+    }
+
+    async function logout() {
+      try {
+        if (state.token) await backendCall("logout", {}, true);
+      } catch (error) {
+        // A saída local continua mesmo se a sessão remota já tiver expirado.
+      }
+
+      state.user = null;
+      state.token = "";
+      state.cryptoKey = null;
+      state.records = [];
+      state.lastImpact = null;
+      sessionStorage.removeItem(SESSION_HINT_KEY);
+      qs("#workspace").classList.add("hidden");
+      qs("#authView").classList.remove("hidden");
+      showAuthMessage("Sessão encerrada com segurança.", "good");
+      refreshIcons();
+    }
+
+    async function backendCall(action, payload = {}, includeToken = true) {
+      const request = { action, payload };
+      if (includeToken && state.token) request.sessionToken = state.token;
+
+      if (window.google?.script?.run) {
+        return new Promise((resolve, reject) => {
+          window.google.script.run
+            .withSuccessHandler((data) => {
+              if (!data?.ok) {
+                reject(new Error(data?.error || "Não foi possível concluir a operação."));
+                return;
+              }
+              resolve(data);
+            })
+            .withFailureHandler((error) => reject(new Error(error?.message || "Serviço temporariamente indisponível.")))
+            .cafeCalcApi(request);
+        });
+      }
+
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(request)
+      });
+
+      if (!response.ok) throw new Error("Serviço temporariamente indisponível.");
+      const data = await response.json();
+      if (!data.ok) throw new Error(data.error || "Não foi possível concluir a operação.");
+      return data;
+    }
+
+    async function deriveRecordKey(email, password) {
+      const encoder = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+
+      return crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: encoder.encode(`CafeCalc-UFLA-SSP-v2:${String(email).trim().toLowerCase()}`),
+          iterations: 210000,
+          hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    function bytesToBase64(bytes) {
+      let binary = "";
+      const array = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+      array.forEach((byte) => {
+        binary += String.fromCharCode(byte);
+      });
+      return btoa(binary);
+    }
+
+    function base64ToBytes(value) {
+      const binary = atob(value);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    }
+
+    async function encryptRecord(record) {
+      if (!state.cryptoKey) throw new Error("Entre novamente para abrir a proteção dos dados.");
+      const encoder = new TextEncoder();
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const clean = normalizeRecord(record);
+      const plain = encoder.encode(JSON.stringify({ schema: 2, record: clean }));
+      const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, state.cryptoKey, plain);
+      return {
+        id: clean.id,
+        createdAt: clean.createdAt,
+        updatedAt: clean.updatedAt,
+        cryptoVersion: CRYPTO_VERSION,
+        encryptedPayload: JSON.stringify({
+          alg: "AES-GCM",
+          iv: bytesToBase64(iv),
+          data: bytesToBase64(cipher)
+        })
+      };
+    }
+
+    async function decryptRecord(envelope) {
+      if (!envelope?.encryptedPayload) return normalizeRecord(envelope);
+      if (!state.cryptoKey) throw new Error("Entre novamente para abrir seus dados.");
+
+      const parsed = JSON.parse(envelope.encryptedPayload);
+      const plain = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: base64ToBytes(parsed.iv) },
+        state.cryptoKey,
+        base64ToBytes(parsed.data)
+      );
+      const decoded = JSON.parse(new TextDecoder().decode(plain));
+      return normalizeRecord(decoded.record || decoded);
+    }
+
+    async function loadProducerRecords() {
+      const result = await backendCall("listRecords", {}, true);
+      const opened = [];
+      for (const envelope of result.records || []) {
+        try {
+          opened.push(await decryptRecord(envelope));
+        } catch (error) {
+          throw new Error("Não consegui abrir alguns dados. Confira se a senha usada é a mesma da conta.");
+        }
+      }
+      state.records = sortRecords(opened);
+    }
+
+    async function saveProducerRecord(record, options = {}) {
+      const before = buildSummary();
+      const clean = normalizeRecord(record);
+      const envelope = await encryptRecord(clean);
+      const result = await backendCall("saveRecord", envelope, true);
+      const stored = normalizeRecord({ ...clean, id: result.record?.id || clean.id, updatedAt: envelope.updatedAt });
+      const index = state.records.findIndex((item) => item.id === stored.id);
+      if (index >= 0) state.records[index] = stored;
+      else state.records.push(stored);
+      state.records = sortRecords(state.records);
+
+      if (stored.kind === "transaction") {
+        const after = buildSummary();
+        state.lastImpact = {
+          title: stored.title,
+          amount: stored.amount,
+          flow: stored.flow,
+          costDelta: after.totalCosts - before.totalCosts,
+          profitDelta: after.profit - before.profit
+        };
+      }
+
+      if (!options.silent) {
+        toast("Operação salva", impactText(state.lastImpact, stored));
+      }
+      return stored;
+    }
+
+    async function deleteProducerRecord(id) {
+      const record = state.records.find((item) => item.id === id);
+      if (!record) return;
+      if (!confirm(`Excluir "${record.title || record.label || "registro"}"?`)) return;
+      await backendCall("deleteRecord", { id }, true);
+      state.records = state.records.filter((item) => item.id !== id);
+      toast("Registro excluído", "Os gráficos e a previsão da safra foram atualizados.");
+      showWorkspace(state.view);
+    }
+
+    function normalizeRecord(record) {
+      const now = new Date().toISOString();
+      const kind = record?.kind || inferLegacyKind(record);
+      const base = {
+        id: record?.id || makeId(kind),
+        kind,
+        createdAt: record?.createdAt || now,
+        updatedAt: record?.updatedAt || now
+      };
+
+      if (kind === "plan") {
+        const costs = {};
+        planCostFields.forEach((field) => {
+          costs[field.id] = Math.max(0, Number(record?.baseCosts?.[field.id] ?? record?.costs?.[field.id] ?? 0));
+        });
+        return {
+          ...base,
+          date: record?.date || todayISO(),
+          cropName: cleanSmallText(record?.cropName || "Safra atual", 80),
+          coffeeType: coffeeTypes.some((type) => type.id === record?.coffeeType) ? record.coffeeType : "arabica",
+          bags: Math.max(0, Number(record?.bags || 0)),
+          hectares: Math.max(0, Number(record?.hectares || 0)),
+          useMarket: record?.useMarket !== false,
+          manualPrice: Math.max(0, Number(record?.manualPrice || record?.price || 0)),
+          baseCosts: costs,
+          notes: cleanLongText(record?.notes || "", 900)
+        };
+      }
+
+      if (kind === "category") {
+        const label = cleanSmallText(record?.label || record?.categoryName || "Categoria personalizada", 70);
+        return {
+          ...base,
+          categoryId: record?.categoryId || `custom_${slugify(label)}_${base.id.slice(-6)}`,
+          label,
+          icon: record?.icon || "tag",
+          flow: normalizeFlow(record?.flow)
+        };
+      }
+
+      const category = categoryById(record?.categoryId) || defaultCategories[0];
+      return {
+        ...base,
+        date: record?.date || todayISO(),
+        title: cleanSmallText(record?.title || record?.plot || category.label, 100),
+        categoryId: record?.categoryId || category.id,
+        categoryName: cleanSmallText(record?.categoryName || category.label, 80),
+        flow: normalizeFlow(record?.flow || category.flow),
+        amount: Math.max(0, Number(record?.amount ?? legacyRecordTotal(record) ?? 0)),
+        notes: cleanLongText(record?.notes || "", 900)
+      };
+    }
+
+    function inferLegacyKind(record) {
+      if (record?.baseCosts || record?.cropName) return "plan";
+      if (record?.categoryId || record?.amount || record?.title) return "transaction";
+      if (record?.bags || record?.costs || record?.coffeeType) return "plan";
+      return "transaction";
+    }
+
+    function legacyRecordTotal(record) {
+      if (!record?.costs) return 0;
+      return Object.values(record.costs).reduce((sum, value) => sum + Number(value || 0), 0);
+    }
+
+    function cleanSmallText(value, limit) {
+      return String(value || "").replace(/\s+/g, " ").trim().slice(0, limit);
+    }
+
+    function cleanLongText(value, limit) {
+      return String(value || "").replace(/\s+/g, " ").trim().slice(0, limit);
+    }
+
+    function normalizeFlow(value) {
+      if (value === "income") return "income";
+      if (value === "investment") return "investment";
+      return "cost";
+    }
+
+    function sortRecords(records) {
+      return [...records].sort((a, b) => {
+        const dateA = new Date(a.date || a.updatedAt || 0).getTime();
+        const dateB = new Date(b.date || b.updatedAt || 0).getTime();
+        return dateB - dateA;
+      });
     }
 
     function normalizeMarket(rows, live) {
-      const filtered = rows
+      const filtered = (rows || [])
         .filter((row) => row && row.produto === "cafe" && Number(row.valor) > 0)
         .map((row) => ({
           dateLabel: row.referente_a || String(row.coletado_em || "").slice(0, 10),
           collectedAt: row.coletado_em || "",
-          type: normalizeType(row.tipo),
+          type: row.tipo === "conillon" || row.tipo === "robusta" ? "conillon" : "arabica",
           value: Number(row.valor)
         }));
 
       const latestByType = {};
       filtered.forEach((row) => {
         const current = latestByType[row.type];
-        if (!current || new Date(row.collectedAt) > new Date(current.collectedAt)) {
-          latestByType[row.type] = row;
-        }
+        if (!current || new Date(row.collectedAt) > new Date(current.collectedAt)) latestByType[row.type] = row;
       });
 
-      const grouped = new Map();
-      filtered.forEach((row) => {
-        const key = row.dateLabel;
-        if (!grouped.has(key)) grouped.set(key, { dateLabel: key, arabica: null, conillon: null, collectedAt: row.collectedAt });
-        const item = grouped.get(key);
-        item[row.type] = row.value;
-        if (new Date(row.collectedAt) > new Date(item.collectedAt)) item.collectedAt = row.collectedAt;
+      const history = {};
+      ["arabica", "conillon"].forEach((type) => {
+        history[type] = filtered
+          .filter((row) => row.type === type)
+          .sort((a, b) => parseMarketDate(a.dateLabel) - parseMarketDate(b.dateLabel))
+          .slice(-14);
       });
-
-      const history = Array.from(grouped.values())
-        .filter((item) => item.arabica || item.conillon)
-        .sort((a, b) => parseDateBR(a.dateLabel) - parseDateBR(b.dateLabel));
 
       return {
         live,
@@ -1745,1376 +1877,1027 @@
       };
     }
 
-    function coffeeType() {
-      return coffeeTypes.find((item) => item.id === answers.coffeeType) || coffeeTypes[0];
-    }
-
-    function marketPriceFor(type = coffeeType()) {
-      return Math.round((market.prices[type.base] || 0) * type.factor * 100) / 100;
-    }
-
-    function refreshLucide() {
-      if (window.lucide) window.lucide.createIcons();
-    }
-
-    function speak(text) {
-      latestSpeech = text;
-      if (!("speechSynthesis" in window)) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "pt-BR";
-      utterance.rate = 0.88;
-      utterance.pitch = 1;
-      window.speechSynthesis.speak(utterance);
-    }
-
-    function showView(view) {
-      currentView = view;
-      wizard.classList.toggle("hidden", view !== "wizard");
-      results.classList.toggle("show", view === "results");
-      accountGate.classList.toggle("hidden", view !== "login");
-      producerHub.classList.toggle("hidden", view !== "hub");
-
-      if (view === "wizard") {
-        results.classList.remove("show");
-        renderStep(false);
+    function parseMarketDate(value) {
+      if (String(value).includes("/")) {
+        const [day, month, year] = String(value).split("/").map(Number);
+        return new Date(year, month - 1, day);
       }
-
-      if (view === "hub") {
-        renderHub();
-      }
-
-      refreshLucide();
-    }
-
-    function normalizeStoredRecords(records) {
-      return records
-        .map((record) => ({
-          id: record.id || crypto.randomUUID?.() || String(Date.now() + Math.random()),
-          date: record.date || new Date().toISOString().slice(0, 10),
-          plot: record.plot || "Fazenda",
-          coffeeType: record.coffeeType || "arabica",
-          bags: Number(record.bags || 0),
-          hectares: Number(record.hectares || 0),
-          price: Number(record.price || 0),
-          costs: {
-            labor: Number(record.costs?.labor || record.labor || 0),
-            fertilizer: Number(record.costs?.fertilizer || record.fertilizer || 0),
-            defensive: Number(record.costs?.defensive || record.defensive || 0),
-            harvest: Number(record.costs?.harvest || record.harvest || 0),
-            machine: Number(record.costs?.machine || record.machine || 0),
-            drying: Number(record.costs?.drying || record.drying || 0),
-            transport: Number(record.costs?.transport || record.transport || 0),
-            other: Number(record.costs?.other || record.other || 0)
-          },
-          notes: record.notes || "",
-          createdAt: record.createdAt || new Date().toISOString()
-        }))
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
-
-    function setAuthMode(mode) {
-      authMode = mode === "register" ? "register" : "login";
-      authModeButtons.forEach((button) => {
-        button.classList.toggle("active", button.dataset.authMode === authMode);
-      });
-
-      authNameField.classList.toggle("hidden", authMode !== "register");
-      document.getElementById("authName").required = authMode === "register";
-      document.getElementById("authPassword").autocomplete = authMode === "register" ? "new-password" : "current-password";
-      loginHelp.className = "save-state";
-      loginHelp.textContent = authMode === "register"
-        ? "Crie uma senha forte. Ela não é gravada aberta: o backend salva somente hash, sal e dados mínimos da conta."
-        : "Entre com a senha criada no site. A sessão dura 12 horas e os lançamentos vêm filtrados pelo seu produtor.";
-      renderAuthSubmitButton();
-    }
-
-    function renderAuthSubmitButton(loading = false) {
-      if (loading) {
-        authSubmitBtn.innerHTML = `<i data-lucide="loader-circle"></i>${authMode === "register" ? "Criando..." : "Entrando..."}`;
-      } else {
-        authSubmitBtn.innerHTML = authMode === "register"
-          ? `<i data-lucide="user-plus"></i>Criar conta`
-          : `<i data-lucide="log-in"></i>Entrar`;
-      }
-      refreshLucide();
-    }
-
-    function showAuthMessage(message, type = "") {
-      loginHelp.textContent = message;
-      loginHelp.className = `save-state ${type}`.trim();
-    }
-
-    async function submitAuthForm(event) {
-      event.preventDefault();
-      if (!authForm.reportValidity()) return;
-
-      const form = new FormData(authForm);
-      const payload = {
-        name: String(form.get("name") || "").trim(),
-        email: String(form.get("email") || "").trim(),
-        password: String(form.get("password") || "")
-      };
-
-      authSubmitBtn.disabled = true;
-      renderAuthSubmitButton(true);
-      showAuthMessage(authMode === "register" ? "Criando conta protegida..." : "Conferindo senha...");
-
-      try {
-        const data = await backendCall(authMode === "register" ? "register" : "login", payload);
-        accountState.user = data.user;
-        accountState.token = data.sessionToken;
-        accountState.mode = "online";
-        accountState.lastError = "";
-        saveSession(data);
-        await loadProducerRecords();
-        authForm.reset();
-        updateAuthUi();
-        showView("hub");
-      } catch (error) {
-        accountState.lastError = error.message || "Não foi possível entrar.";
-        showAuthMessage(accountState.lastError, "bad");
-      } finally {
-        authSubmitBtn.disabled = false;
-        renderAuthSubmitButton(false);
-      }
-    }
-
-    async function initAuth() {
-      setAuthMode("login");
-      updateAuthUi();
-      await restoreSession();
-    }
-
-    async function restoreSession() {
-      const saved = readSavedSession();
-      if (!saved?.token) return;
-
-      if (saved.expiresAt && new Date(saved.expiresAt) <= new Date()) {
-        clearSavedSession();
-        return;
-      }
-
-      accountState.user = saved.user || { name: "Produtor", email: "conta protegida" };
-      accountState.token = saved.token;
-      accountState.mode = "online";
-      updateAuthUi();
-
-      try {
-        const data = await backendCall("resumeSession");
-        accountState.user = data.user || accountState.user;
-        saveSession({ ...saved, user: accountState.user });
-        await loadProducerRecords();
-        updateAuthUi();
-      } catch (error) {
-        clearSavedSession();
-        accountState.user = null;
-        accountState.token = "";
-        accountState.records = [];
-        accountState.mode = "none";
-        accountState.lastError = error.message || "Sessão expirada. Entre novamente.";
-        updateAuthUi();
-      }
-    }
-
-    function readSavedSession() {
-      try {
-        return JSON.parse(sessionStorage.getItem(AUTH_SESSION_KEY) || "null");
-      } catch (error) {
-        clearSavedSession();
-        return null;
-      }
-    }
-
-    function saveSession(data) {
-      const token = data.sessionToken || data.token || accountState.token;
-      if (!token) return;
-
-      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
-        token,
-        expiresAt: data.expiresAt || new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
-        user: data.user || accountState.user
-      }));
-    }
-
-    function clearSavedSession() {
-      sessionStorage.removeItem(AUTH_SESSION_KEY);
-    }
-
-    async function logout() {
-      try {
-        if (accountState.token) await backendCall("logout");
-      } catch (error) {
-        // A sessão local deve ser limpa mesmo se o backend já a encerrou.
-      }
-
-      clearSavedSession();
-      accountState.user = null;
-      accountState.token = "";
-      accountState.records = [];
-      accountState.mode = "none";
-      accountState.lastError = "";
-      updateAuthUi();
-      showView("login");
-    }
-
-    function updateAuthUi() {
-      const user = accountState.user;
-      const isOnline = accountState.mode === "online" && Boolean(accountState.token);
-
-      authMini.className = `security-status ${isOnline ? "" : "bad"}`;
-      authMini.innerHTML = isOnline
-        ? `<i data-lucide="shield-check"></i><div><p class="mini-title">Conta protegida</p><p class="mini-text">${escapeHtml(user.email)}</p></div>`
-        : `<i data-lucide="lock-keyhole"></i><div><p class="mini-title">Sem login</p><p class="mini-text">Entre para salvar dados.</p></div>`;
-
-      if (user) {
-        userChip.innerHTML = `<i data-lucide="user-round-check"></i><span>${escapeHtml(user.name)}</span>`;
-        hubSubtitle.textContent = "Dados carregados pelo Apps Script. A planilha fica privada e o backend entrega só os lançamentos deste produtor.";
-      } else {
-        userChip.innerHTML = `<i data-lucide="user-round-check"></i><span>Produtor</span>`;
-      }
-
-      refreshLucide();
-    }
-
-    async function backendCall(action, payload = {}) {
-      const request = { action, payload };
-      if (accountState.token) request.sessionToken = accountState.token;
-
-      if (window.google?.script?.run) {
-        return new Promise((resolve, reject) => {
-          window.google.script.run
-            .withSuccessHandler((data) => {
-              if (!data?.ok) {
-                reject(new Error(data?.error || "Erro no backend"));
-                return;
-              }
-              resolve(data);
-            })
-            .withFailureHandler(reject)
-            .cafeCalcApi(request);
-        });
-      }
-
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(request)
-      });
-
-      if (!response.ok) throw new Error("Backend indisponível");
-      const data = await response.json();
-      if (!data.ok) throw new Error(data.error || "Erro no backend");
-      return data;
-    }
-
-    async function loadProducerRecords() {
-      if (!accountState.token) return;
-
-      try {
-        const data = await backendCall("listRecords");
-        accountState.records = normalizeStoredRecords(data.records || []);
-        accountState.mode = "online";
-        accountState.lastError = "";
-      } catch (error) {
-        accountState.records = [];
-        accountState.lastError = error.message || "Não consegui carregar os lançamentos.";
-        if (/sess/i.test(accountState.lastError)) {
-          clearSavedSession();
-          accountState.user = null;
-          accountState.token = "";
-          accountState.mode = "none";
-          showView("login");
-        }
-      }
-    }
-
-    async function persistRecords() {
-      return true;
-    }
-
-    async function saveProducerRecord(record) {
-      if (!accountState.token) {
-        accountState.lastError = "Entre na conta para salvar na planilha.";
-        updateAuthUi();
-        showView("login");
-        return false;
-      }
-
-      const clean = normalizeStoredRecords([record])[0];
-
-      try {
-        const data = await backendCall("saveRecord", clean);
-        const saved = normalizeStoredRecords([data.record || clean])[0];
-        const existingIndex = accountState.records.findIndex((item) => item.id === saved.id);
-        if (existingIndex >= 0) {
-          accountState.records[existingIndex] = saved;
-        } else {
-          accountState.records.unshift(saved);
-        }
-        accountState.records = normalizeStoredRecords(accountState.records);
-        accountState.lastError = "";
-        updateAuthUi();
-        renderHub();
-        return true;
-      } catch (error) {
-        accountState.lastError = error.message || "Não consegui salvar na planilha.";
-        updateAuthUi();
-        renderHub();
-        return false;
-      }
-    }
-
-    async function deleteProducerRecord(id) {
-      if (!accountState.token) return;
-
-      try {
-        await backendCall("deleteRecord", { id });
-        accountState.records = accountState.records.filter((record) => record.id !== id);
-        accountState.lastError = "";
-      } catch (error) {
-        accountState.lastError = error.message || "Não consegui apagar o lançamento.";
-      }
-
-      updateAuthUi();
-      renderHub();
-    }
-
-    function stepSpeakText(step = steps[currentStep]) {
-      if (step.kind === "price") {
-        return `${step.question} O preço de mercado estimado é ${moneyCents(marketPriceFor())} por saca.`;
-      }
-      return step.question;
-    }
-
-    function updateMarketUi() {
-      document.getElementById("arabicaPrice").textContent = moneyCents(market.prices.arabica);
-      document.getElementById("conillonPrice").textContent = moneyCents(market.prices.conillon);
-
-      const sourceState = document.getElementById("sourceState");
-      sourceState.classList.toggle("warn", !market.live);
-      sourceState.innerHTML = `<i data-lucide="${market.live ? "cloud-check" : "cloud-off"}"></i>${market.live ? "online" : "base local"}`;
-
-      const dateText = market.updatedAt
-        ? new Date(market.updatedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
-        : "sem data";
-      document.getElementById("marketNote").textContent = `Atualizado em ${dateText}. Valores por saca; ajuste se o comprador pagar diferente.`;
-
-      if (!answers.price) answers.price = marketPriceFor();
-      if (steps[currentStep]?.kind === "price" || steps[currentStep]?.kind === "choice") renderStep(false);
-      refreshLucide();
+      return new Date(value);
     }
 
     async function loadMarket() {
       try {
         const response = await fetch(`${MARKET_URL}?v=${Date.now()}`, { cache: "no-store" });
-        if (!response.ok) throw new Error("Falha ao baixar preços");
+        if (!response.ok) throw new Error("Falha ao atualizar mercado");
         const rows = await response.json();
-        if (!Array.isArray(rows)) throw new Error("Formato inválido");
+        if (!Array.isArray(rows)) throw new Error("Formato de mercado inválido");
         market = normalizeMarket(rows, true);
       } catch (error) {
         market = normalizeMarket(fallbackMarketRows, false);
       }
-      answers.price = marketPriceFor();
       updateMarketUi();
+      if (state.user) showWorkspace(state.view, { keepScroll: true });
     }
 
-    function renderStep(shouldSpeak = false) {
-      const step = steps[currentStep];
-      errorText.classList.remove("show");
-      questionText.textContent = step.question;
-      questionKicker.textContent = step.kicker;
-      questionIcon.innerHTML = `<i data-lucide="${step.icon}"></i>`;
-      stepCounter.textContent = `Pergunta ${currentStep + 1} de ${steps.length}`;
-      stepHint.textContent = coffeeType().short;
-      progressFill.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-      backBtn.disabled = currentStep === 0;
-      backBtn.style.visibility = currentStep === 0 ? "hidden" : "visible";
-      nextBtn.innerHTML = currentStep === steps.length - 1
-        ? `Ver resultado <i data-lucide="chart-no-axes-combined"></i>`
-        : `Avançar <i data-lucide="arrow-right"></i>`;
-
-      if (step.kind === "choice") renderChoiceStep();
-      if (step.kind === "price") renderPriceStep();
-      if (step.kind === "number") renderNumberStep(step);
-
-      latestSpeech = stepSpeakText(step);
-      if (shouldSpeak) speak(latestSpeech);
-      refreshLucide();
+    function marketPriceFor(typeId) {
+      const type = coffeeTypes.find((item) => item.id === typeId) || coffeeTypes[0];
+      return Math.round((market.prices[type.base] || 0) * type.factor * 100) / 100;
     }
 
-    function renderChoiceStep() {
-      answerArea.innerHTML = `
-        <div class="choice-grid">
-          ${coffeeTypes.map((type) => `
-            <button class="choice-card ${answers.coffeeType === type.id ? "active" : ""}" type="button" data-choice="${type.id}" aria-label="${type.label}">
-              <i data-lucide="${type.icon}"></i>
-              <p class="choice-name">${type.label}</p>
-              <p class="choice-desc">${type.text}</p>
-              <p class="choice-price">${moneyCents(marketPriceFor(type))}/saca</p>
-            </button>
-          `).join("")}
-        </div>
-      `;
-
-      answerArea.querySelectorAll("[data-choice]").forEach((button) => {
-        button.addEventListener("click", () => {
-          answers.coffeeType = button.dataset.choice;
-          answers.price = marketPriceFor();
-          renderStep(false);
-        });
-      });
+    function marketStats(typeId) {
+      const type = coffeeTypes.find((item) => item.id === typeId) || coffeeTypes[0];
+      const current = marketPriceFor(type.id);
+      const rows = market.history[type.base] || [];
+      const previousRaw = rows.length > 1 ? rows[rows.length - 2].value : current;
+      const previous = Math.round(previousRaw * type.factor * 100) / 100;
+      const change = current - previous;
+      return { current, previous, change, direction: change > 0 ? "up" : change < 0 ? "down" : "flat" };
     }
 
-    function renderPriceStep() {
-      const suggested = marketPriceFor();
-      if (!answers.price) answers.price = suggested;
-      answerArea.innerHTML = `
-        <div class="price-source-box">
-          <div class="price-source-top">
-            <i data-lucide="badge-dollar-sign"></i>
-            <div>
-              <p class="source-price">${moneyCents(suggested)}</p>
-              <p class="source-caption">Preço estimado para ${coffeeType().label}. Pode trocar pelo valor da cooperativa, corretor ou comprador.</p>
-            </div>
-          </div>
-          ${numberInputMarkup("price", answers.price, "reais", 10)}
-          <div class="unit-row">
-            <button class="quick-btn" type="button" data-set-price="${suggested}">Usar mercado</button>
-            <button class="quick-btn" type="button" data-bump="-50">- R$ 50</button>
-            <button class="quick-btn" type="button" data-bump="50">+ R$ 50</button>
-          </div>
-        </div>
-      `;
-      wireNumberInput("price", 10);
-      answerArea.querySelector("[data-set-price]").addEventListener("click", (event) => {
-        answers.price = Number(event.currentTarget.dataset.setPrice);
-        renderPriceStep();
-        refreshLucide();
-      });
-      answerArea.querySelectorAll("[data-bump]").forEach((button) => {
-        button.addEventListener("click", () => {
-          answers.price = Math.max(0, Number(answers.price || 0) + Number(button.dataset.bump));
-          renderPriceStep();
-          refreshLucide();
-        });
-      });
+    function updateMarketUi() {
+      const arabica = marketStats("arabica");
+      const conillon = marketStats("conillon");
+      const trend = arabica.direction === "up" ? "Alta no arábica" : arabica.direction === "down" ? "Baixa no arábica" : "Estável";
+      qs("#marketArabica").textContent = money(arabica.current, 2);
+      qs("#marketConillon").textContent = money(conillon.current, 2);
+      qs("#marketTrend").textContent = trend;
+
+      const date = market.updatedAt
+        ? new Date(market.updatedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+        : "referência local";
+      qs("#marketUpdated").textContent = market.live ? `Preços atualizados em ${date}` : "Preços de referência carregados";
+      qs("#marketNote").textContent = `${trend}. A projeção de lucro usa o preço atual quando a safra está em modo mercado.`;
+      refreshIcons();
     }
 
-    function renderNumberStep(step) {
-      answerArea.innerHTML = `
-        <div class="number-area">
-          ${numberInputMarkup(step.id, answers[step.id], step.unit, step.step)}
-          <div class="unit-row">
-            <span class="unit-badge">${step.unit}</span>
-            ${step.quick.map((value) => `<button class="quick-btn" type="button" data-quick="${value}">${formatQuick(value, step.unit)}</button>`).join("")}
-          </div>
-        </div>
-      `;
-      wireNumberInput(step.id, step.step);
-      answerArea.querySelectorAll("[data-quick]").forEach((button) => {
-        button.addEventListener("click", () => {
-          answers[step.id] = Number(button.dataset.quick);
-          renderNumberStep(step);
-          refreshLucide();
-        });
-      });
+    function updateUserUi() {
+      qs("#userName").textContent = state.user?.name || "Produtor";
+      qs("#userEmail").textContent = state.user?.email || "conta protegida";
     }
 
-    function numberInputMarkup(id, value, unit, step) {
-      return `
-        <div class="input-shell">
-          <button class="step-btn" type="button" data-minus="${id}" aria-label="Diminuir">
-            <i data-lucide="minus"></i>
-          </button>
-          <input class="answer-input" id="input-${id}" inputmode="decimal" type="number" min="0" step="${step}" value="${value ?? ""}" aria-label="${unit}">
-          <button class="step-btn" type="button" data-plus="${id}" aria-label="Aumentar">
-            <i data-lucide="plus"></i>
-          </button>
-        </div>
-      `;
+    function showWorkspace(view, options = {}) {
+      state.view = view || "daily";
+      qsa("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === state.view));
+      qsa(".mode-btn").forEach((button) => button.classList.toggle("active", button.dataset.view === state.view));
+
+      if (state.view === "history") renderHistory();
+      else if (state.view === "complete") renderCompleteCalculator();
+      else if (state.view === "categories") renderCategories();
+      else renderDaily();
+
+      if (!options.keepScroll) window.scrollTo({ top: 0, behavior: "smooth" });
+      refreshIcons();
     }
 
-    function wireNumberInput(id, step) {
-      const input = document.getElementById(`input-${id}`);
-      input.addEventListener("input", () => {
-        answers[id] = input.value === "" ? "" : Number(input.value);
-      });
-      answerArea.querySelector(`[data-minus="${id}"]`).addEventListener("click", () => {
-        answers[id] = Math.max(0, Number(answers[id] || 0) - step);
-        input.value = answers[id];
-      });
-      answerArea.querySelector(`[data-plus="${id}"]`).addEventListener("click", () => {
-        answers[id] = Number(answers[id] || 0) + step;
-        input.value = answers[id];
-      });
-      setTimeout(() => input.focus({ preventScroll: true }), 60);
+    function getPlans() {
+      return state.records.filter((record) => record.kind === "plan");
     }
 
-    function formatQuick(value, unit) {
-      if (unit === "reais") return money(value);
-      return numberBR(value, unit === "hectares" ? 1 : 0);
-    }
-
-    function validateStep() {
-      const step = steps[currentStep];
-      if (step.kind === "choice") return true;
-
-      const value = Number(answers[step.id]);
-      if (!Number.isFinite(value) || value < step.min) {
-        errorText.textContent = step.min > 0 ? "Informe um número maior que zero." : "Informe zero ou um valor maior.";
-        errorText.classList.add("show");
-        speak(errorText.textContent);
-        return false;
-      }
-      return true;
-    }
-
-    function nextStep() {
-      if (!validateStep()) return;
-      if (currentStep < steps.length - 1) {
-        currentStep += 1;
-        renderStep(true);
-        return;
-      }
-      showResults();
-    }
-
-    function previousStep() {
-      if (currentStep === 0) return;
-      currentStep -= 1;
-      renderStep(false);
-    }
-
-    function renderHub() {
-      if (!accountState.user) {
-        showView("login");
-        return;
-      }
-
-      document.querySelectorAll("[data-hub-tab]").forEach((button) => {
-        button.classList.toggle("active", button.dataset.hubTab === accountState.activeTab);
-      });
-
-      if (accountState.activeTab === "record") renderRecordForm();
-      if (accountState.activeTab === "analysis") renderProducerAnalysis();
-      if (accountState.activeTab === "history") renderProducerHistory();
-      refreshLucide();
-    }
-
-    function renderRecordForm(seed = {}) {
-      const defaults = {
-        id: seed.id || "",
-        date: seed.date || new Date().toISOString().slice(0, 10),
-        plot: seed.plot || "",
-        coffeeType: seed.coffeeType || answers.coffeeType || "arabica",
-        bags: seed.bags ?? "",
-        hectares: seed.hectares ?? "",
-        price: seed.price ?? marketPriceFor(coffeeTypes.find((type) => type.id === (seed.coffeeType || answers.coffeeType)) || coffeeType()),
-        notes: seed.notes || "",
-        costs: seed.costs || {}
-      };
-
-      hubContent.innerHTML = `
-        <form class="record-form" id="recordForm">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Lançamento</p>
-              <h2 class="choice-name">Registrar produção e gastos</h2>
-            </div>
-            <span class="source-state ${accountState.mode === "online" ? "" : "warn"}">
-              <i data-lucide="${accountState.mode === "online" ? "cloud-check" : "cloud-off"}"></i>
-              ${accountState.mode === "online" ? "planilha" : "sem sessão"}
-            </span>
-          </div>
-
-          <div class="form-grid">
-            <div class="field">
-              <label for="recordDate">Data</label>
-              <input id="recordDate" name="date" type="date" value="${defaults.date}" required>
-            </div>
-            <div class="field">
-              <label for="recordPlot">Talhão ou fazenda</label>
-              <input id="recordPlot" name="plot" type="text" value="${escapeAttr(defaults.plot)}" placeholder="Ex.: Talhão 2">
-            </div>
-            <div class="field">
-              <label for="recordType">Tipo de café</label>
-              <select id="recordType" name="coffeeType">
-                ${coffeeTypes.map((type) => `<option value="${type.id}" ${defaults.coffeeType === type.id ? "selected" : ""}>${type.label}</option>`).join("")}
-              </select>
-            </div>
-            <div class="field">
-              <label for="recordBags">Sacas colhidas</label>
-              <input id="recordBags" name="bags" inputmode="decimal" type="number" min="0" step="0.01" value="${defaults.bags}" required>
-            </div>
-            <div class="field">
-              <label for="recordHectares">Hectares</label>
-              <input id="recordHectares" name="hectares" inputmode="decimal" type="number" min="0" step="0.01" value="${defaults.hectares}" required>
-            </div>
-            <div class="field">
-              <label for="recordPrice">Preço da saca</label>
-              <input id="recordPrice" name="price" inputmode="decimal" type="number" min="0" step="0.01" value="${defaults.price}" required>
-            </div>
-          </div>
-
-          <div>
-            <p class="eyebrow">Gastos</p>
-            <div class="cost-form-grid">
-              ${costFields.map((field) => `
-                <div class="field">
-                  <label for="cost-${field.id}">${field.label}</label>
-                  <input id="cost-${field.id}" name="${field.id}" inputmode="decimal" type="number" min="0" step="0.01" value="${defaults.costs[field.id] ?? 0}">
-                </div>
-              `).join("")}
-            </div>
-          </div>
-
-          <div class="field full">
-            <label for="recordNotes">Observações</label>
-            <textarea id="recordNotes" name="notes" placeholder="Ex.: chuva na colheita, talhão com broca, venda parcial...">${escapeHtml(defaults.notes)}</textarea>
-          </div>
-
-          <input type="hidden" name="id" value="${defaults.id}">
-          <p class="save-state ${accountState.lastError ? "bad" : ""}" id="saveState">${accountState.lastError || "Pronto para salvar."}</p>
-          <div class="nav-row">
-            <button class="ghost" type="button" id="backToIntro">
-              <i data-lucide="list-checks"></i>
-              Voltar para perguntas
-            </button>
-            <button class="primary" type="submit">
-              <i data-lucide="save"></i>
-              Salvar lançamento
-            </button>
-          </div>
-        </form>
-      `;
-
-      const typeSelect = document.getElementById("recordType");
-      typeSelect.addEventListener("change", () => {
-        const type = coffeeTypes.find((item) => item.id === typeSelect.value) || coffeeTypes[0];
-        document.getElementById("recordPrice").value = marketPriceFor(type);
-      });
-
-      document.getElementById("backToIntro").addEventListener("click", () => showView("wizard"));
-      document.getElementById("recordForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const form = new FormData(event.currentTarget);
-        const record = recordFromForm(form);
-        document.getElementById("saveState").textContent = "Salvando...";
-        const saved = await saveProducerRecord(record);
-        if (!saved) return;
-        accountState.lastError = "";
-        accountState.activeTab = "analysis";
-        renderHub();
-        speak("Lançamento salvo. A análise da fazenda foi atualizada.");
-      });
-    }
-
-    function recordFromForm(form) {
+    function getActivePlan() {
+      const plan = getPlans()[0];
+      if (plan) return plan;
       const costs = {};
-      costFields.forEach((field) => {
-        costs[field.id] = Number(form.get(field.id) || 0);
+      planCostFields.forEach((field) => {
+        costs[field.id] = 0;
       });
       return {
-        id: form.get("id") || crypto.randomUUID?.() || String(Date.now()),
-        date: form.get("date"),
-        plot: String(form.get("plot") || "Fazenda"),
-        coffeeType: form.get("coffeeType"),
-        bags: Number(form.get("bags") || 0),
-        hectares: Number(form.get("hectares") || 0),
-        price: Number(form.get("price") || 0),
-        costs,
-        notes: String(form.get("notes") || ""),
-        createdAt: new Date().toISOString()
+        id: "draft_plan",
+        kind: "plan",
+        date: todayISO(),
+        cropName: "Safra atual",
+        coffeeType: "arabica",
+        bags: 0,
+        hectares: 0,
+        useMarket: true,
+        manualPrice: 0,
+        baseCosts: costs,
+        notes: ""
       };
     }
 
-    function recordFromIntro() {
-      const costs = {};
-      costFields.forEach((field) => {
-        costs[field.id] = Number(answers[field.id] || 0);
-      });
-      return {
-        date: new Date().toISOString().slice(0, 10),
-        plot: "Conta inicial",
-        coffeeType: answers.coffeeType,
-        bags: Number(answers.bags || 0),
-        hectares: Number(answers.hectares || 0),
-        price: Number(answers.price || 0),
-        costs,
-        notes: "Criado pela sequência de perguntas iniciais.",
-        createdAt: new Date().toISOString()
-      };
+    function getTransactions() {
+      return state.records.filter((record) => record.kind === "transaction");
     }
 
-    function renderProducerAnalysis() {
-      if (!accountState.records.length) {
-        hubContent.innerHTML = emptyHub("Ainda não há dados salvos.", "Faça o primeiro lançamento para ver gráficos da fazenda.");
-        wireEmptyHub();
-        return;
-      }
-
-      const summary = aggregateRecords(accountState.records);
-      hubContent.innerHTML = `
-        <div class="analysis-panel">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Análise acumulada</p>
-              <h2 class="choice-name">${accountState.records.length} lançamento(s) salvos</h2>
-            </div>
-            <button class="secondary" type="button" id="newRecordFromAnalysis">
-              <i data-lucide="plus"></i>
-              Novo
-            </button>
-          </div>
-
-          <div class="analysis-grid">
-            ${metricMarkup("package-check", "Sacas registradas", numberBR(summary.bags, 1), `${numberBR(summary.hectares, 1)} hectares somados`)}
-            ${metricMarkup("circle-dollar-sign", "Lucro acumulado", money(summary.profit), `${numberBR(summary.margin * 100, 1)}% de margem`)}
-            ${metricMarkup("scale", "Custo médio/saca", moneyCents(summary.costPerBag), `Preço médio ${moneyCents(summary.price)}`)}
-          </div>
-
-          <div class="charts-grid">
-            <div class="chart-box">
-              <div class="chart-title">
-                <h2>Resultado por mês</h2>
-                <span>lucro ou prejuízo</span>
-              </div>
-              ${monthlyChart(accountState.records)}
-            </div>
-            <div class="chart-box">
-              <div class="chart-title">
-                <h2>Gastos acumulados</h2>
-                <span>maior peso primeiro</span>
-              </div>
-              ${costBars(summary)}
-            </div>
-            <div class="chart-box wide">
-              <div class="chart-title">
-                <h2>Leitura da fazenda</h2>
-                <span>texto gerado pelos dados</span>
-              </div>
-              <ul class="insight-list">
-                ${producerInsights(summary).map((item) => `<li><i data-lucide="${item.icon}"></i><span>${item.text}</span></li>`).join("")}
-              </ul>
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.getElementById("newRecordFromAnalysis").addEventListener("click", () => {
-        accountState.activeTab = "record";
-        renderHub();
-      });
+    function getCustomCategories() {
+      return state.records.filter((record) => record.kind === "category");
     }
 
-    function renderProducerHistory() {
-      if (!accountState.records.length) {
-        hubContent.innerHTML = emptyHub("Histórico vazio.", "Os lançamentos salvos aparecerão aqui.");
-        wireEmptyHub();
-        return;
-      }
-
-      hubContent.innerHTML = `
-        <div class="history-panel">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow">Histórico</p>
-              <h2 class="choice-name">Lançamentos da fazenda</h2>
-            </div>
-            <button class="secondary" type="button" id="refreshRecords">
-              <i data-lucide="refresh-cw"></i>
-              Atualizar
-            </button>
-          </div>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Talhão</th>
-                  <th>Café</th>
-                  <th>Sacas</th>
-                  <th>Receita</th>
-                  <th>Custo</th>
-                  <th>Resultado</th>
-                  <th>Ação</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${accountState.records.map((record) => {
-                  const calc = calcFromRecord(record);
-                  return `
-                    <tr>
-                      <td>${formatDate(record.date)}</td>
-                      <td>${escapeHtml(record.plot)}</td>
-                      <td>${coffeeName(record.coffeeType)}</td>
-                      <td>${numberBR(record.bags, 1)}</td>
-                      <td>${money(calc.revenue)}</td>
-                      <td>${money(calc.totalCosts)}</td>
-                      <td>${money(calc.profit)}</td>
-                      <td>
-                        <button class="ghost" type="button" data-delete-record="${record.id}" aria-label="Apagar lançamento">
-                          <i data-lucide="trash-2"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  `;
-                }).join("")}
-              </tbody>
-            </table>
-          </div>
-          <div class="danger-zone">
-            <span>Dados sensíveis: mantenha a planilha privada e publique o Apps Script para executar como proprietário.</span>
-            <button class="secondary" type="button" id="logoutBtn">
-              <i data-lucide="log-out"></i>
-              Sair
-            </button>
-          </div>
-        </div>
-      `;
-
-      document.getElementById("refreshRecords").addEventListener("click", async () => {
-        await loadProducerRecords();
-        renderHub();
-      });
-      document.getElementById("logoutBtn").addEventListener("click", logout);
-      document.querySelectorAll("[data-delete-record]").forEach((button) => {
-        button.addEventListener("click", async () => {
-          await deleteProducerRecord(button.dataset.deleteRecord);
-        });
-      });
-    }
-
-    function emptyHub(title, text) {
-      return `
-        <div class="empty-state">
-          <div>
-            <i data-lucide="clipboard-list"></i>
-            <h2>${title}</h2>
-            <p>${text}</p>
-            <button class="primary" type="button" data-empty-record>
-              <i data-lucide="plus"></i>
-              Fazer lançamento
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function wireEmptyHub() {
-      hubContent.querySelector("[data-empty-record]")?.addEventListener("click", () => {
-        accountState.activeTab = "record";
-        renderHub();
-      });
-    }
-
-    function aggregateRecords(records) {
-      const costs = costFields.map((field) => ({
-        ...field,
-        value: records.reduce((sum, record) => sum + Number(record.costs?.[field.id] || 0), 0)
+    function getCategories() {
+      const custom = getCustomCategories().map((record) => ({
+        id: record.categoryId,
+        label: record.label,
+        icon: record.icon || "tag",
+        flow: record.flow,
+        customRecordId: record.id
       }));
-      const totalCosts = costs.reduce((sum, item) => sum + item.value, 0);
-      const bags = records.reduce((sum, record) => sum + Number(record.bags || 0), 0);
-      const hectares = records.reduce((sum, record) => sum + Number(record.hectares || 0), 0);
-      const revenue = records.reduce((sum, record) => sum + calcFromRecord(record).revenue, 0);
-      const profit = revenue - totalCosts;
-      const price = bags > 0 ? revenue / bags : 0;
-      const type = coffeeTypes.find((item) => item.id === records[0]?.coffeeType) || coffeeTypes[0];
-      const biggestCost = costs.reduce((max, item) => item.value > max.value ? item : max, costs[0]);
-
-      return {
-        type,
-        costs,
-        totalCosts,
-        bags,
-        hectares,
-        price,
-        revenue,
-        profit,
-        costPerBag: bags > 0 ? totalCosts / bags : 0,
-        profitPerBag: bags > 0 ? profit / bags : 0,
-        productivity: hectares > 0 ? bags / hectares : 0,
-        margin: revenue > 0 ? profit / revenue : 0,
-        revenuePerHa: hectares > 0 ? revenue / hectares : 0,
-        costPerHa: hectares > 0 ? totalCosts / hectares : 0,
-        biggestCost
-      };
-    }
-
-    function calcFromRecord(record) {
-      const totalCosts = costFields.reduce((sum, field) => sum + Number(record.costs?.[field.id] || 0), 0);
-      const revenue = Number(record.bags || 0) * Number(record.price || 0);
-      return {
-        totalCosts,
-        revenue,
-        profit: revenue - totalCosts,
-        costPerBag: Number(record.bags || 0) > 0 ? totalCosts / Number(record.bags) : 0
-      };
-    }
-
-    function producerInsights(summary) {
-      const insights = [];
-      const biggestShare = summary.totalCosts > 0 ? summary.biggestCost.value / summary.totalCosts : 0;
-      insights.push({
-        icon: summary.profit >= 0 ? "badge-check" : "triangle-alert",
-        text: summary.profit >= 0
-          ? `A fazenda está positiva no acumulado: sobrou ${money(summary.profit)} depois dos custos informados.`
-          : `O acumulado está negativo: faltou ${money(Math.abs(summary.profit))}. O preço médio de equilíbrio é ${moneyCents(summary.costPerBag)} por saca.`
-      });
-      insights.push({
-        icon: "scale",
-        text: `Cada saca custou em média ${moneyCents(summary.costPerBag)} e foi vendida/calculada por ${moneyCents(summary.price)}.`
-      });
-      insights.push({
-        icon: "map",
-        text: `A produtividade média registrada é ${numberBR(summary.productivity, 1)} sc/ha. Use esse número por talhão para descobrir onde a lavoura responde melhor.`
-      });
-      if (summary.totalCosts > 0) {
-        insights.push({
-          icon: "receipt-text",
-          text: `O maior gasto acumulado é ${summary.biggestCost.label}, com ${numberBR(biggestShare * 100, 1)}% dos custos. Esse é o primeiro ponto para conferir notas e negociar compra.`
-        });
-      }
-      insights.push({
-        icon: "cloud-sun",
-        text: `A estimativa não substitui assistência técnica: clima, bebida, peneira, frete, pragas e qualidade mudam o resultado real.`
-      });
-      return insights;
-    }
-
-    function monthlyChart(records) {
-      const grouped = new Map();
-      records.forEach((record) => {
-        const key = String(record.date || "").slice(0, 7);
-        const current = grouped.get(key) || { label: key, value: 0 };
-        current.value += calcFromRecord(record).profit;
-        grouped.set(key, current);
-      });
-      const rows = Array.from(grouped.values())
-        .sort((a, b) => a.label.localeCompare(b.label))
-        .slice(-8)
-        .map((item) => ({
-          label: formatMonth(item.label),
-          value: Math.abs(item.value),
-          raw: item.value,
-          color: item.value >= 0 ? "var(--good)" : "var(--bad)"
+      const fromTransactions = getTransactions()
+        .filter((record) => record.categoryId && !defaultCategories.some((item) => item.id === record.categoryId))
+        .map((record) => ({
+          id: record.categoryId,
+          label: record.categoryName || "Categoria personalizada",
+          icon: "tag",
+          flow: record.flow
         }));
-      const max = Math.max(...rows.map((item) => item.value), 1);
-      return `
-        <div class="bar-list">
-          ${rows.map((row) => `
-            <div class="bar-row">
-              <div class="bar-label">${row.label}</div>
-              <div class="bar-track"><div class="bar-fill" style="width:${Math.max(3, (row.value / max) * 100)}%; background:${row.color};"></div></div>
-              <div class="bar-value">${money(row.raw)}</div>
-            </div>
-          `).join("")}
-        </div>
-      `;
+      const map = new Map();
+      [...defaultCategories, ...custom, ...fromTransactions].forEach((category) => {
+        if (!map.has(category.id)) map.set(category.id, category);
+      });
+      return Array.from(map.values());
     }
 
-    function coffeeName(id) {
-      return coffeeTypes.find((type) => type.id === id)?.short || "Café";
+    function categoryById(id) {
+      return getCategories().find((category) => category.id === id) || defaultCategories.find((category) => category.id === id);
     }
 
-    function formatDate(value) {
-      if (!value) return "--";
-      return new Date(`${value}T12:00:00`).toLocaleDateString("pt-BR");
+    function categoryLabel(id) {
+      return categoryById(id)?.label || "Categoria";
     }
 
-    function formatMonth(value) {
-      const [year, month] = value.split("-");
-      return `${month}/${year}`;
+    function categoryIcon(id) {
+      return categoryById(id)?.icon || "tag";
     }
 
-    function escapeHtml(value) {
-      return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function planPrice(plan) {
+      return plan.useMarket ? marketPriceFor(plan.coffeeType) : Number(plan.manualPrice || marketPriceFor(plan.coffeeType));
     }
 
-    function escapeAttr(value) {
-      return escapeHtml(value).replace(/`/g, "&#096;");
-    }
-
-    function calculations() {
-      const costs = costFields.map((field) => ({
-        ...field,
-        value: Number(answers[field.id] || 0)
-      }));
-      const totalCosts = costs.reduce((sum, item) => sum + item.value, 0);
-      const bags = Number(answers.bags || 0);
-      const hectares = Number(answers.hectares || 0);
-      const price = Number(answers.price || 0);
-      const revenue = bags * price;
+    function buildSummary(planOverride = null, transactionOverride = null) {
+      const plan = planOverride || getActivePlan();
+      const transactions = transactionOverride || getTransactions();
+      const baseCosts = Object.values(plan.baseCosts || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+      const txCosts = transactions
+        .filter((record) => record.flow !== "income")
+        .reduce((sum, record) => sum + Number(record.amount || 0), 0);
+      const txIncome = transactions
+        .filter((record) => record.flow === "income")
+        .reduce((sum, record) => sum + Number(record.amount || 0), 0);
+      const price = planPrice(plan);
+      const revenue = Number(plan.bags || 0) * price + txIncome;
+      const totalCosts = baseCosts + txCosts;
       const profit = revenue - totalCosts;
-      const costPerBag = bags > 0 ? totalCosts / bags : 0;
-      const profitPerBag = bags > 0 ? profit / bags : 0;
-      const productivity = hectares > 0 ? bags / hectares : 0;
       const margin = revenue > 0 ? profit / revenue : 0;
-      const revenuePerHa = hectares > 0 ? revenue / hectares : 0;
-      const costPerHa = hectares > 0 ? totalCosts / hectares : 0;
-      const biggestCost = costs.reduce((max, item) => item.value > max.value ? item : max, costs[0]);
+      const costPerBag = Number(plan.bags || 0) > 0 ? totalCosts / Number(plan.bags) : 0;
+      const productivity = Number(plan.hectares || 0) > 0 ? Number(plan.bags || 0) / Number(plan.hectares) : 0;
+      const stats = marketStats(plan.coffeeType);
+      const previousRevenue = Number(plan.bags || 0) * stats.previous + txIncome;
+      const marketImpact = revenue - previousRevenue;
+
+      const costsByCategory = categoryCostRows(plan, transactions);
+      const biggest = costsByCategory[0] || { label: "Sem custos", value: 0 };
+
       return {
-        type: coffeeType(),
-        costs,
-        totalCosts,
-        bags,
-        hectares,
+        plan,
+        transactions,
         price,
         revenue,
+        baseCosts,
+        txCosts,
+        txIncome,
+        totalCosts,
         profit,
-        costPerBag,
-        profitPerBag,
-        productivity,
         margin,
-        revenuePerHa,
-        costPerHa,
-        biggestCost
+        costPerBag,
+        productivity,
+        marketImpact,
+        costsByCategory,
+        biggest
       };
     }
 
-    function resultTone(calc) {
-      if (calc.profit < 0) return { className: "bad", title: "A conta deu prejuízo", icon: "triangle-alert" };
-      if (calc.margin < 0.1) return { className: "warn", title: "A conta ficou apertada", icon: "circle-alert" };
-      if (calc.margin < 0.25) return { className: "", title: "A lavoura pagou e sobrou", icon: "badge-check" };
-      return { className: "", title: "A lavoura está bem na conta", icon: "badge-check" };
+    function categoryCostRows(plan, transactions) {
+      const map = new Map();
+      planCostFields.forEach((field) => {
+        const value = Number(plan.baseCosts?.[field.id] || 0);
+        if (value > 0) map.set(field.id, { id: field.id, label: field.label, icon: field.icon, value });
+      });
+
+      transactions.filter((record) => record.flow !== "income").forEach((record) => {
+        const current = map.get(record.categoryId) || {
+          id: record.categoryId,
+          label: record.categoryName || categoryLabel(record.categoryId),
+          icon: categoryIcon(record.categoryId),
+          value: 0
+        };
+        current.value += Number(record.amount || 0);
+        map.set(record.categoryId, current);
+      });
+
+      return Array.from(map.values()).sort((a, b) => b.value - a.value);
     }
 
-    function showResults() {
-      const calc = calculations();
-      const tone = resultTone(calc);
-      showView("results");
-      results.innerHTML = `
-        <div class="result-hero ${tone.className}">
-          <div>
-            <h1>${tone.title}</h1>
-            <p>${shortResultText(calc)}</p>
+    function renderDaily(seed = null) {
+      const summary = buildSummary();
+      const plan = summary.plan;
+      const hasPlan = getPlans().length > 0;
+      const latestTransactions = getTransactions().slice(0, 4);
+
+      qs("#viewContent").innerHTML = `
+        <div class="view-head">
+          <div class="view-title">
+            <p class="eyebrow">Controle financeiro diário</p>
+            <h2>Registre o gasto na hora e veja o impacto na safra.</h2>
+            <p>${hasPlan ? `${escapeHtml(plan.cropName)} usa ${coffeeTypeName(plan.coffeeType)} a ${money(summary.price, 2)} por saca.` : "Comece informando uma previsão simples da safra. Depois, cada gasto diário atualiza lucro, custo total e gráficos."}</p>
           </div>
-          <div class="hero-actions">
-            <button class="audio-btn" type="button" id="speakResult" aria-label="Ouvir resultado">
-              <i data-lucide="volume-2"></i>
+          <button class="secondary" type="button" id="editPlanBtn">
+            <i data-lucide="${hasPlan ? "settings-2" : "plus-circle"}"></i>
+            ${hasPlan ? "Ajustar safra" : "Configurar safra"}
+          </button>
+        </div>
+
+        ${metricGrid(summary)}
+
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Lançamento rápido</p>
+                <h3>${seed ? "Editar lançamento" : "Adicionar gasto, compra ou investimento"}</h3>
+                <p>Preencha os campos principais. O sistema recalcula tudo após salvar.</p>
+              </div>
+            </div>
+            ${state.lastImpact ? impactBox(state.lastImpact) : ""}
+            ${transactionForm(seed)}
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Gráficos da safra</p>
+                <h3>Evolução financeira</h3>
+                <p>Custos por categoria, fluxo mensal e leitura simples da rentabilidade.</p>
+              </div>
+            </div>
+            <div class="panel-grid equal">
+              <div>
+                <h4>Custos por categoria</h4>
+                ${costChart(summary.costsByCategory)}
+              </div>
+              <div>
+                <h4>Fluxo por mês</h4>
+                ${monthlyFlowChart(summary.transactions)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 14px;">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Últimas operações</p>
+              <h3>Histórico recente</h3>
+            </div>
+            <button class="secondary" type="button" data-go-history>
+              <i data-lucide="list-filter"></i>
+              Ver histórico
             </button>
-            <button class="audio-btn" type="button" id="printResult" aria-label="Imprimir">
-              <i data-lucide="printer"></i>
-            </button>
           </div>
-        </div>
-
-        <div class="metric-grid">
-          ${metricMarkup("circle-dollar-sign", "Lucro total", money(calc.profit), `${money(calc.profitPerBag)} por saca`)}
-          ${metricMarkup("scale", "Ponto de equilíbrio", moneyCents(calc.costPerBag), "preço mínimo por saca")}
-          ${metricMarkup("map", "Produtividade", `${numberBR(calc.productivity, 1)} sc/ha`, `${numberBR(calc.hectares, 1)} ha informados`)}
-          ${metricMarkup("percent", "Margem", `${numberBR(calc.margin * 100, 1)}%`, "lucro dividido pela receita")}
-        </div>
-
-        <div class="charts-grid">
-          <div class="chart-box">
-            <div class="chart-title">
-              <h2>Dinheiro da lavoura</h2>
-              <span>entrada, gasto e sobra</span>
-            </div>
-            ${moneyBars(calc)}
-          </div>
-
-          <div class="chart-box">
-            <div class="chart-title">
-              <h2>Custos por parte</h2>
-              <span>maior peso primeiro</span>
-            </div>
-            ${costBars(calc)}
-          </div>
-
-          <div class="chart-box">
-            <div class="chart-title">
-              <h2>Preço e risco</h2>
-              <span>se o mercado mudar</span>
-            </div>
-            ${sensitivityChart(calc)}
-          </div>
-
-          <div class="chart-box">
-            <div class="chart-title">
-              <h2>Produtividade</h2>
-              <span>comparação de gestão</span>
-            </div>
-            ${productivityChart(calc)}
-          </div>
-
-          <div class="chart-box wide">
-            <div class="chart-title">
-              <h2>Mercado recente</h2>
-              <span>arábica e conilon</span>
-            </div>
-            ${marketHistoryChart()}
-          </div>
-        </div>
-
-        <div class="diagnosis">
-          <h2>Leitura clara para o produtor</h2>
-          <p>${diagnosisText(calc)}</p>
-          <p>Fonte de preço: <a class="plain-link" href="${MARKET_URL}" target="_blank" rel="noopener">histórico público de cotações</a>. É uma referência, não substitui a nota da venda, a cooperativa ou orientação técnica.</p>
-        </div>
-
-        <div class="nav-row">
-          <button class="secondary" type="button" id="editAgain">
-            <i data-lucide="arrow-left"></i>
-            Corrigir respostas
-          </button>
-          <button class="secondary" type="button" id="saveIntroResult">
-            <i data-lucide="cloud-upload"></i>
-            Salvar na área do produtor
-          </button>
-          <button class="primary" type="button" id="restart">
-            <i data-lucide="rotate-ccw"></i>
-            Nova conta
-          </button>
+          ${latestTransactions.length ? `<div class="history-list">${latestTransactions.map(historyRow).join("")}</div>` : emptyState("Nenhuma operação diária registrada", "Quando comprar insumos, pagar mão de obra ou investir na lavoura, registre aqui em poucos segundos.")}
         </div>
       `;
 
-      latestSpeech = `${tone.title}. ${shortResultText(calc)} ${diagnosisText(calc)}`;
-      document.getElementById("speakResult").addEventListener("click", () => speak(latestSpeech));
-      document.getElementById("printResult").addEventListener("click", () => window.print());
-      document.getElementById("editAgain").addEventListener("click", () => {
-        currentStep = 0;
-        showView("wizard");
+      qs("#editPlanBtn").addEventListener("click", () => {
+        state.view = "complete";
+        renderCompleteCalculator({ editPlan: true });
+        qsa("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === "complete"));
+        qsa(".mode-btn").forEach((button) => button.classList.toggle("active", button.dataset.view === "complete"));
+        refreshIcons();
       });
-      document.getElementById("saveIntroResult").addEventListener("click", async () => {
-        if (!accountState.user) {
-          showView("login");
-          speak("Entre na conta para salvar os dados da fazenda.");
-          return;
-        }
-        const saved = await saveProducerRecord(recordFromIntro());
-        if (!saved) return;
-        accountState.activeTab = "analysis";
-        showView("hub");
-      });
-      document.getElementById("restart").addEventListener("click", () => window.location.reload());
-      refreshLucide();
-      speak(latestSpeech);
+      qs("[data-go-history]")?.addEventListener("click", () => showWorkspace("history"));
+      bindTransactionForm(seed);
+      bindRowActions();
     }
 
-    function metricMarkup(icon, label, value, note) {
+    function metricGrid(summary) {
+      const profitTone = summary.profit > 0 ? "good" : summary.profit < 0 ? "bad" : "warn";
+      const marginTone = summary.margin >= 0.2 ? "good" : summary.margin > 0 ? "warn" : "bad";
+      const marketTone = summary.marketImpact > 0 ? "good" : summary.marketImpact < 0 ? "bad" : "warn";
       return `
-        <div class="metric">
-          <i data-lucide="${icon}"></i>
-          <p class="metric-label">${label}</p>
-          <p class="metric-value">${value}</p>
+        <div class="metric-grid">
+          ${metricCard("wallet-cards", "Custo total", money(summary.totalCosts), `${money(summary.baseCosts)} planejado, ${money(summary.txCosts)} diário`, "")}
+          ${metricCard("circle-dollar-sign", "Lucro previsto", money(summary.profit), `${percentBR(summary.margin)} de margem`, profitTone)}
+          ${metricCard("package-check", "Custo por saca", money(summary.costPerBag, 2), `${numberBR(summary.productivity, 1)} sacas por hectare`, marginTone)}
+          ${metricCard("activity", "Impacto do mercado", money(summary.marketImpact), `comparado ao preço anterior`, marketTone)}
+        </div>
+      `;
+    }
+
+    function metricCard(icon, label, value, note, tone) {
+      return `
+        <div class="metric-card ${tone}">
+          <div class="metric-top">
+            <span>${label}</span>
+            <i data-lucide="${icon}"></i>
+          </div>
+          <div class="metric-value">${value}</div>
           <p class="metric-note">${note}</p>
         </div>
       `;
     }
 
-    function shortResultText(calc) {
-      const verb = calc.profit >= 0 ? "sobrou" : "faltou";
-      const amount = money(Math.abs(calc.profit));
-      return `Com ${numberBR(calc.bags, 1)} sacas vendidas a ${moneyCents(calc.price)}, entrou ${money(calc.revenue)}. O custo informado foi ${money(calc.totalCosts)} e ${verb} ${amount}.`;
-    }
-
-    function moneyBars(calc) {
-      const rows = [
-        { label: "Receita", value: calc.revenue, color: "var(--sky)" },
-        { label: "Custos", value: calc.totalCosts, color: "var(--warn)" },
-        { label: calc.profit >= 0 ? "Lucro" : "Prejuízo", value: Math.abs(calc.profit), color: calc.profit >= 0 ? "var(--good)" : "var(--bad)" }
-      ];
-      const max = Math.max(...rows.map((row) => row.value), 1);
-      return barList(rows, max);
-    }
-
-    function costBars(calc) {
-      const rows = calc.costs
-        .filter((item) => item.value > 0)
-        .sort((a, b) => b.value - a.value)
-        .map((item) => ({
-          label: item.label,
-          value: item.value,
-          color: item.id === calc.biggestCost.id ? "var(--soil)" : "var(--leaf)"
-        }));
-      if (!rows.length) return `<p class="metric-note">Nenhum custo foi informado.</p>`;
-      const max = Math.max(...rows.map((row) => row.value), 1);
-      return barList(rows, max, calc.totalCosts);
-    }
-
-    function barList(rows, max, total = null) {
+    function impactBox(impact) {
+      const signal = impact.profitDelta < 0 ? "reduziu" : impact.profitDelta > 0 ? "aumentou" : "não mudou";
       return `
-        <div class="bar-list">
-          ${rows.map((row) => {
-            const pct = Math.max(3, (row.value / max) * 100);
-            const share = total ? ` · ${numberBR((row.value / total) * 100, 1)}%` : "";
-            return `
-              <div class="bar-row">
-                <div class="bar-label">${row.label}</div>
-                <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${row.color};"></div></div>
-                <div class="bar-value">${money(row.value)}${share}</div>
-              </div>
-            `;
-          }).join("")}
+        <div class="quick-impact">
+          <i data-lucide="pulse"></i>
+          <div>
+            <strong>Último impacto: ${escapeHtml(impact.title)}</strong>
+            <span>Esse lançamento ${signal} o lucro previsto em ${money(Math.abs(impact.profitDelta))}.</span>
+          </div>
         </div>
       `;
     }
 
-    function sensitivityChart(calc) {
-      const scenarios = [
-        { label: "-10%", price: calc.price * 0.9 },
-        { label: "-5%", price: calc.price * 0.95 },
-        { label: "hoje", price: calc.price },
-        { label: "+5%", price: calc.price * 1.05 },
-        { label: "+10%", price: calc.price * 1.1 }
-      ].map((scenario) => ({
-        ...scenario,
-        profit: scenario.price * calc.bags - calc.totalCosts
-      }));
-      const maxAbs = Math.max(...scenarios.map((item) => Math.abs(item.profit)), 1);
-      const width = 520;
-      const height = 230;
-      const zero = height / 2;
-      const barWidth = 54;
+    function transactionForm(seed = null) {
+      const record = seed || {
+        id: "",
+        date: todayISO(),
+        title: "",
+        amount: "",
+        flow: "cost",
+        categoryId: "defensivos",
+        categoryName: "",
+        notes: ""
+      };
+      const categories = getCategories();
       return `
-        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Cenários de preço">
-          <line x1="24" y1="${zero}" x2="${width - 20}" y2="${zero}" stroke="#cbd5c6" stroke-width="2" />
-          ${scenarios.map((item, index) => {
-            const x = 54 + index * 92;
-            const barHeight = Math.max(4, Math.abs(item.profit) / maxAbs * 88);
-            const y = item.profit >= 0 ? zero - barHeight : zero;
-            const color = item.profit >= 0 ? "var(--good)" : "var(--bad)";
-            return `
-              <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="6" fill="${color}" />
-              <text x="${x + barWidth / 2}" y="${height - 36}" text-anchor="middle">${item.label}</text>
-              <text x="${x + barWidth / 2}" y="${height - 16}" text-anchor="middle">${money(item.price)}</text>
-              <text x="${x + barWidth / 2}" y="${item.profit >= 0 ? y - 8 : y + barHeight + 18}" text-anchor="middle">${money(item.profit, true)}</text>
-            `;
-          }).join("")}
-        </svg>
+        <form class="form" id="transactionForm" novalidate>
+          <input type="hidden" name="id" value="${escapeAttr(record.id || "")}">
+          <div class="form-grid">
+            <div class="field">
+              <label for="txDate">Data</label>
+              <input id="txDate" name="date" type="date" value="${escapeAttr(record.date || todayISO())}" required>
+            </div>
+            <div class="field">
+              <label for="txAmount">Valor</label>
+              <input id="txAmount" name="amount" inputmode="decimal" type="number" min="0.01" step="0.01" value="${escapeAttr(record.amount ?? "")}" placeholder="Ex.: 500" required>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="txFlow">Tipo</label>
+              <select id="txFlow" name="flow">
+                <option value="cost" ${record.flow === "cost" ? "selected" : ""}>Gasto ou compra</option>
+                <option value="investment" ${record.flow === "investment" ? "selected" : ""}>Investimento</option>
+                <option value="income" ${record.flow === "income" ? "selected" : ""}>Receita ou venda</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="txCategory">Categoria</label>
+              <select id="txCategory" name="categoryId">
+                ${categories.map((category) => `<option value="${escapeAttr(category.id)}" ${record.categoryId === category.id ? "selected" : ""}>${escapeHtml(category.label)}</option>`).join("")}
+                <option value="new_custom">Criar categoria</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field hidden" id="customCategoryField">
+            <label for="txCustomCategory">Nome da nova categoria</label>
+            <input id="txCustomCategory" name="customCategory" type="text" maxlength="70" placeholder="Ex.: Análise de solo">
+          </div>
+
+          <div class="field">
+            <label for="txTitle">Descrição curta</label>
+            <input id="txTitle" name="title" type="text" maxlength="100" value="${escapeAttr(record.title || "")}" placeholder="Ex.: Defensivo comprado na loja agrícola" required>
+          </div>
+
+          <div class="field">
+            <label for="txNotes">Observações</label>
+            <textarea id="txNotes" name="notes" placeholder="Opcional">${escapeHtml(record.notes || "")}</textarea>
+          </div>
+
+          <p class="message" id="txMessage">Após salvar, os gráficos e a previsão de lucro serão atualizados.</p>
+          <div class="form-actions">
+            ${seed ? `<button class="secondary" type="button" id="cancelEditBtn"><i data-lucide="x"></i>Cancelar edição</button>` : `<div class="chips">${quickAmountButtons()}</div>`}
+            <button class="primary" type="submit">
+              <i data-lucide="save"></i>
+              ${seed ? "Salvar edição" : "Salvar lançamento"}
+            </button>
+          </div>
+        </form>
       `;
     }
 
-    function productivityChart(calc) {
-      const max = Math.max(calc.type.good * 1.45, calc.productivity, 1);
-      const pct = Math.min(100, (calc.productivity / max) * 100);
-      const lowPct = Math.min(100, (calc.type.low / max) * 100);
-      const goodPct = Math.min(100, (calc.type.good / max) * 100);
-      const status = calc.productivity < calc.type.low
-        ? "baixo para a referência usada"
-        : calc.productivity < calc.type.good
-          ? "dentro de uma faixa intermediária"
-          : "forte para a referência usada";
-
-      return `
-        <svg class="chart-svg" viewBox="0 0 520 230" role="img" aria-label="Produtividade por hectare">
-          <rect x="36" y="86" width="448" height="34" rx="8" fill="#e8ede4" />
-          <rect x="36" y="86" width="${4.48 * pct}" height="34" rx="8" fill="var(--leaf)" />
-          <line x1="${36 + 4.48 * lowPct}" y1="70" x2="${36 + 4.48 * lowPct}" y2="136" stroke="var(--warn)" stroke-width="4" />
-          <line x1="${36 + 4.48 * goodPct}" y1="70" x2="${36 + 4.48 * goodPct}" y2="136" stroke="var(--good)" stroke-width="4" />
-          <text x="36" y="54">0</text>
-          <text x="${36 + 4.48 * lowPct}" y="54" text-anchor="middle">${numberBR(calc.type.low, 0)} sc/ha</text>
-          <text x="${36 + 4.48 * goodPct}" y="54" text-anchor="middle">${numberBR(calc.type.good, 0)} sc/ha</text>
-          <text x="260" y="174" text-anchor="middle" style="font-size:24px; fill:var(--ink);">${numberBR(calc.productivity, 1)} sacas por hectare</text>
-          <text x="260" y="202" text-anchor="middle">${status}</text>
-        </svg>
-      `;
+    function quickAmountButtons() {
+      return [100, 500, 1000].map((value) => `
+        <button class="chip-btn" type="button" data-quick-amount="${value}">${money(value)}</button>
+      `).join("");
     }
 
-    function marketHistoryChart() {
-      const items = market.history.slice(-10);
-      if (items.length < 2) return `<p class="metric-note">Histórico de mercado insuficiente para desenhar o gráfico.</p>`;
+    function bindTransactionForm(seed = null) {
+      const form = qs("#transactionForm");
+      if (!form) return;
+      const categorySelect = qs("#txCategory");
+      const customField = qs("#customCategoryField");
 
-      const arabicaValues = items.map((item) => item.arabica).filter(Boolean);
-      const conillonValues = items.map((item) => item.conillon).filter(Boolean);
-      const all = [...arabicaValues, ...conillonValues];
-      const min = Math.min(...all) * 0.96;
-      const max = Math.max(...all) * 1.04;
-      const width = 780;
-      const height = 260;
-      const left = 56;
-      const right = 24;
-      const top = 24;
-      const bottom = 52;
-      const plotW = width - left - right;
-      const plotH = height - top - bottom;
-      const x = (index) => left + (plotW / Math.max(items.length - 1, 1)) * index;
-      const y = (value) => top + (1 - ((value - min) / (max - min || 1))) * plotH;
-      const line = (key) => items
-        .map((item, index) => item[key] ? `${index === 0 ? "M" : "L"} ${x(index).toFixed(1)} ${y(item[key]).toFixed(1)}` : "")
-        .join(" ");
-
-      return `
-        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Histórico recente de arábica e conilon">
-          <line x1="${left}" y1="${top}" x2="${left}" y2="${height - bottom}" stroke="#d4dccf" />
-          <line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d4dccf" />
-          <text x="${left}" y="18">${money(max)}</text>
-          <text x="${left}" y="${height - bottom + 22}">${money(min)}</text>
-          <path d="${line("arabica")}" fill="none" stroke="var(--leaf)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="${line("conillon")}" fill="none" stroke="var(--sky)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-          ${items.map((item, index) => `
-            <text x="${x(index)}" y="${height - 18}" text-anchor="middle">${String(item.dateLabel).slice(0, 5)}</text>
-          `).join("")}
-          <circle cx="${width - 202}" cy="34" r="7" fill="var(--leaf)" />
-          <text x="${width - 190}" y="38">Arábica</text>
-          <circle cx="${width - 112}" cy="34" r="7" fill="var(--sky)" />
-          <text x="${width - 100}" y="38">Conilon</text>
-        </svg>
-      `;
-    }
-
-    function diagnosisText(calc) {
-      const pieces = [];
-      const breakEvenGap = calc.price - calc.costPerBag;
-      const biggestShare = calc.totalCosts > 0 ? calc.biggestCost.value / calc.totalCosts : 0;
-
-      pieces.push(`O custo para produzir uma saca ficou em ${moneyCents(calc.costPerBag)}. O preço usado foi ${moneyCents(calc.price)}.`);
-
-      if (calc.profit >= 0) {
-        pieces.push(`A fazenda aguenta uma queda de até ${moneyCents(Math.max(0, breakEvenGap))} por saca antes de entrar no prejuízo, considerando os custos informados.`);
-      } else {
-        pieces.push(`Para empatar, a saca precisaria chegar a ${moneyCents(calc.costPerBag)}, ou os custos precisariam cair na mesma proporção.`);
-      }
-
-      if (calc.totalCosts > 0) {
-        pieces.push(`O maior peso do custo foi ${calc.biggestCost.label}, com ${numberBR(biggestShare * 100, 1)}% do gasto total.`);
-      }
-
-      if (calc.productivity < calc.type.low) {
-        pieces.push(`A produtividade de ${numberBR(calc.productivity, 1)} sc/ha ficou abaixo da referência de gestão para ${calc.type.short}; vale revisar estande, nutrição, pragas, colheita e talhões fracos com assistência técnica.`);
-      } else if (calc.productivity < calc.type.good) {
-        pieces.push(`A produtividade está em faixa intermediária para ${calc.type.short}; separar os custos por talhão pode mostrar onde a lavoura responde melhor.`);
-      } else {
-        pieces.push(`A produtividade está forte para a referência usada em ${calc.type.short}; o ponto principal agora é proteger margem e qualidade na venda.`);
-      }
-
-      const profitAtMinusFive = calc.price * 0.95 * calc.bags - calc.totalCosts;
-      pieces.push(`Se o preço cair 5%, o resultado estimado vira ${money(profitAtMinusFive)}.`);
-      pieces.push(`Não corte adubo, manejo ou controle só pelo gráfico: confirme com notas, análise de solo, agrônomo e comprador local.`);
-
-      return pieces.join(" ");
-    }
-
-    nextBtn.addEventListener("click", nextStep);
-    backBtn.addEventListener("click", previousStep);
-    speakBtn.addEventListener("click", () => speak(stepSpeakText()));
-    repeatAudio.addEventListener("click", () => speak(latestSpeech || stepSpeakText()));
-    openHubBtn.addEventListener("click", () => showView(accountState.user ? "hub" : "login"));
-    authForm.addEventListener("submit", submitAuthForm);
-    authModeButtons.forEach((button) => {
-      button.addEventListener("click", () => setAuthMode(button.dataset.authMode));
-    });
-    document.querySelectorAll("[data-hub-tab]").forEach((button) => {
-      button.addEventListener("click", () => {
-        accountState.activeTab = button.dataset.hubTab;
-        renderHub();
+      categorySelect.addEventListener("change", () => {
+        customField.classList.toggle("hidden", categorySelect.value !== "new_custom");
       });
-    });
-    window.addEventListener("DOMContentLoaded", () => {
-      renderStep(false);
-      initAuth();
-      refreshLucide();
-      loadMarket();
-    });
+
+      qsa("[data-quick-amount]", form).forEach((button) => {
+        button.addEventListener("click", () => {
+          qs("#txAmount").value = button.dataset.quickAmount;
+        });
+      });
+
+      qs("#cancelEditBtn")?.addEventListener("click", () => {
+        state.editingRecord = null;
+        renderDaily();
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const message = qs("#txMessage");
+        message.className = "message";
+        message.textContent = "Salvando lançamento...";
+
+        try {
+          const record = await transactionFromForm(new FormData(form), seed);
+          await saveProducerRecord(record);
+          state.editingRecord = null;
+          renderDaily();
+        } catch (error) {
+          message.textContent = error.message || "Não foi possível salvar.";
+          message.className = "message bad";
+        }
+      });
+    }
+
+    async function transactionFromForm(form, seed = null) {
+      let categoryId = String(form.get("categoryId") || "");
+      let categoryName = categoryLabel(categoryId);
+      const flow = normalizeFlow(form.get("flow"));
+
+      if (categoryId === "new_custom") {
+        const label = cleanSmallText(form.get("customCategory"), 70);
+        if (!label) throw new Error("Informe o nome da nova categoria.");
+        const categoryRecord = normalizeRecord({
+          kind: "category",
+          label,
+          flow,
+          icon: "tag",
+          categoryId: `custom_${slugify(label)}`
+        });
+        await saveProducerRecord(categoryRecord, { silent: true });
+        categoryId = categoryRecord.categoryId;
+        categoryName = categoryRecord.label;
+      }
+
+      return normalizeRecord({
+        id: seed?.id || String(form.get("id") || "") || makeId("tx"),
+        kind: "transaction",
+        createdAt: seed?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        date: String(form.get("date") || todayISO()),
+        title: form.get("title"),
+        amount: Number(form.get("amount") || 0),
+        flow,
+        categoryId,
+        categoryName,
+        notes: form.get("notes")
+      });
+    }
+
+    function renderHistory() {
+      const categories = getCategories();
+      const filtered = filteredTransactions();
+      const total = filtered.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      qs("#viewContent").innerHTML = `
+        <div class="view-head">
+          <div class="view-title">
+            <p class="eyebrow">Histórico completo</p>
+            <h2>Filtre, edite e acompanhe todas as operações.</h2>
+            <p>${filtered.length} lançamento(s) encontrados, somando ${money(total)} no filtro atual.</p>
+          </div>
+          <button class="primary" type="button" data-new-transaction>
+            <i data-lucide="plus"></i>
+            Novo lançamento
+          </button>
+        </div>
+
+        <div class="panel">
+          <div class="filter-row">
+            <div class="field">
+              <label for="filterStart">De</label>
+              <input id="filterStart" type="date" value="${escapeAttr(state.filters.start)}">
+            </div>
+            <div class="field">
+              <label for="filterEnd">Até</label>
+              <input id="filterEnd" type="date" value="${escapeAttr(state.filters.end)}">
+            </div>
+            <div class="field">
+              <label for="filterCategory">Categoria</label>
+              <select id="filterCategory">
+                <option value="all">Todas</option>
+                ${categories.map((category) => `<option value="${escapeAttr(category.id)}" ${state.filters.category === category.id ? "selected" : ""}>${escapeHtml(category.label)}</option>`).join("")}
+              </select>
+            </div>
+            <div class="field">
+              <label for="filterText">Buscar</label>
+              <input id="filterText" type="search" value="${escapeAttr(state.filters.text)}" placeholder="Descrição ou observação">
+            </div>
+          </div>
+          ${filtered.length ? `<div class="history-list">${filtered.map(historyRow).join("")}</div>` : emptyState("Nenhum lançamento no filtro", "Ajuste o período, categoria ou texto para encontrar operações salvas.")}
+        </div>
+      `;
+
+      qs("[data-new-transaction]").addEventListener("click", () => showWorkspace("daily"));
+      bindFilters();
+      bindRowActions();
+    }
+
+    function bindFilters() {
+      const map = [
+        ["#filterStart", "start"],
+        ["#filterEnd", "end"],
+        ["#filterCategory", "category"],
+        ["#filterText", "text"]
+      ];
+      map.forEach(([selector, key]) => {
+        qs(selector).addEventListener("input", (event) => {
+          state.filters[key] = event.currentTarget.value;
+          renderHistory();
+        });
+      });
+    }
+
+    function filteredTransactions() {
+      return getTransactions().filter((record) => {
+        if (state.filters.start && record.date < state.filters.start) return false;
+        if (state.filters.end && record.date > state.filters.end) return false;
+        if (state.filters.category !== "all" && record.categoryId !== state.filters.category) return false;
+        const text = state.filters.text.trim().toLowerCase();
+        if (text && !`${record.title} ${record.notes} ${record.categoryName}`.toLowerCase().includes(text)) return false;
+        return true;
+      });
+    }
+
+    function historyRow(record) {
+      const sign = record.flow === "income" ? "+" : "-";
+      const tone = record.flow === "income" ? "trend-up" : "trend-down";
+      return `
+        <div class="history-row">
+          <div class="row-icon"><i data-lucide="${categoryIcon(record.categoryId)}"></i></div>
+          <div class="row-main">
+            <strong>${escapeHtml(record.title)}</strong>
+            <span>${formatDate(record.date)} · ${escapeHtml(record.categoryName || categoryLabel(record.categoryId))} · ${flowName(record.flow)}</span>
+          </div>
+          <div class="row-value">
+            <strong class="${tone}">${sign}${money(record.amount)}</strong>
+            <div class="row-actions">
+              <button class="small-icon" type="button" data-edit-record="${escapeAttr(record.id)}" aria-label="Editar lançamento">
+                <i data-lucide="pencil"></i>
+              </button>
+              <button class="small-icon danger" type="button" data-delete-record="${escapeAttr(record.id)}" aria-label="Excluir lançamento">
+                <i data-lucide="trash-2"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindRowActions() {
+      qsa("[data-edit-record]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const record = state.records.find((item) => item.id === button.dataset.editRecord);
+          if (!record) return;
+          state.editingRecord = record;
+          state.view = "daily";
+          qsa("[data-view]").forEach((nav) => nav.classList.toggle("active", nav.dataset.view === "daily"));
+          qsa(".mode-btn").forEach((nav) => nav.classList.toggle("active", nav.dataset.view === "daily"));
+          renderDaily(record);
+          refreshIcons();
+        });
+      });
+
+      qsa("[data-delete-record]").forEach((button) => {
+        button.addEventListener("click", () => deleteProducerRecord(button.dataset.deleteRecord));
+      });
+    }
+
+    function renderCategories() {
+      const custom = getCustomCategories();
+      qs("#viewContent").innerHTML = `
+        <div class="view-head">
+          <div class="view-title">
+            <p class="eyebrow">Categorias personalizadas</p>
+            <h2>Adapte o controle à realidade da fazenda.</h2>
+            <p>Crie categorias para custos específicos da sua propriedade. Elas também ficam protegidas nos dados da conta.</p>
+          </div>
+        </div>
+
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Nova categoria</p>
+                <h3>Adicionar categoria</h3>
+              </div>
+            </div>
+            <form class="form" id="categoryForm">
+              <div class="field">
+                <label for="categoryName">Nome</label>
+                <input id="categoryName" name="label" type="text" maxlength="70" placeholder="Ex.: Análise de solo" required>
+              </div>
+              <div class="field">
+                <label for="categoryFlow">Tipo padrão</label>
+                <select id="categoryFlow" name="flow">
+                  <option value="cost">Gasto</option>
+                  <option value="investment">Investimento</option>
+                  <option value="income">Receita</option>
+                </select>
+              </div>
+              <p class="message" id="categoryMessage">A categoria aparecerá no lançamento rápido.</p>
+              <button class="primary" type="submit">
+                <i data-lucide="plus"></i>
+                Criar categoria
+              </button>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Lista atual</p>
+                <h3>Categorias disponíveis</h3>
+              </div>
+            </div>
+            <div class="category-list">
+              ${defaultCategories.map(categoryRow).join("")}
+              ${custom.map(categoryRow).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+
+      qs("#categoryForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const message = qs("#categoryMessage");
+        message.textContent = "Salvando categoria...";
+        try {
+          await saveProducerRecord({
+            kind: "category",
+            categoryId: `custom_${slugify(form.get("label"))}`,
+            label: form.get("label"),
+            flow: form.get("flow"),
+            icon: "tag"
+          });
+          renderCategories();
+        } catch (error) {
+          message.className = "message bad";
+          message.textContent = error.message || "Não foi possível salvar.";
+        }
+      });
+
+      qsa("[data-delete-category]").forEach((button) => {
+        button.addEventListener("click", () => deleteProducerRecord(button.dataset.deleteCategory));
+      });
+    }
+
+    function categoryRow(category) {
+      const isCustom = Boolean(category.customRecordId || category.kind === "category");
+      const recordId = category.customRecordId || category.id;
+      return `
+        <div class="category-row">
+          <div class="row-icon"><i data-lucide="${category.icon || "tag"}"></i></div>
+          <div class="row-main">
+            <strong>${escapeHtml(category.label)}</strong>
+            <span>${isCustom ? "Categoria criada pelo produtor" : "Categoria padrão"} · ${flowName(category.flow)}</span>
+          </div>
+          <div class="row-value">
+            ${isCustom ? `<button class="small-icon danger" type="button" data-delete-category="${escapeAttr(recordId)}" aria-label="Excluir categoria"><i data-lucide="trash-2"></i></button>` : `<span class="message">Padrão</span>`}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCompleteCalculator(options = {}) {
+      const plan = options.editPlan ? getActivePlan() : getActivePlan();
+      qs("#viewContent").innerHTML = `
+        <div class="view-head">
+          <div class="view-title">
+            <p class="eyebrow">Cálculo completo único</p>
+            <h2>Informe a safra de uma vez e veja o resultado financeiro.</h2>
+            <p>Use este modo para montar a previsão principal. Depois, o controle diário acompanha o que mudou ao longo do tempo.</p>
+          </div>
+        </div>
+
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Dados da safra</p>
+                <h3>Produção, área, preço e custos</h3>
+              </div>
+            </div>
+            ${planForm(plan)}
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Resultado</p>
+                <h3>Projeção financeira</h3>
+              </div>
+            </div>
+            <div id="completeResult"></div>
+          </div>
+        </div>
+      `;
+
+      const form = qs("#planForm");
+      const renderResult = () => {
+        const planDraft = planFromForm(new FormData(form), plan.id && plan.id !== "draft_plan" ? plan : null);
+        qs("#completeResult").innerHTML = completeResult(planDraft);
+        refreshIcons();
+      };
+
+      form.addEventListener("input", renderResult);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+        const message = qs("#planMessage");
+        message.textContent = "Salvando safra...";
+        try {
+          const saved = await saveProducerRecord(planFromForm(new FormData(form), plan.id && plan.id !== "draft_plan" ? plan : null));
+          message.className = "message good";
+          message.textContent = `${saved.cropName} salva como safra atual.`;
+          showWorkspace("daily");
+        } catch (error) {
+          message.className = "message bad";
+          message.textContent = error.message || "Não foi possível salvar a safra.";
+        }
+      });
+
+      qs("#useMarketPrice").addEventListener("change", (event) => {
+        qs("#manualPriceField").classList.toggle("hidden", event.currentTarget.checked);
+        renderResult();
+      });
+
+      renderResult();
+    }
+
+    function planForm(plan) {
+      return `
+        <form class="form" id="planForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="cropName">Nome da safra</label>
+              <input id="cropName" name="cropName" type="text" maxlength="80" value="${escapeAttr(plan.cropName)}" required>
+            </div>
+            <div class="field">
+              <label for="planDate">Data de referência</label>
+              <input id="planDate" name="date" type="date" value="${escapeAttr(plan.date || todayISO())}" required>
+            </div>
+          </div>
+
+          <div class="form-grid three">
+            <div class="field">
+              <label for="planCoffeeType">Tipo de café</label>
+              <select id="planCoffeeType" name="coffeeType">
+                ${coffeeTypes.map((type) => `<option value="${type.id}" ${plan.coffeeType === type.id ? "selected" : ""}>${type.label}</option>`).join("")}
+              </select>
+            </div>
+            <div class="field">
+              <label for="planBags">Sacas previstas</label>
+              <input id="planBags" name="bags" inputmode="decimal" type="number" min="0" step="0.01" value="${escapeAttr(plan.bags)}" required>
+            </div>
+            <div class="field">
+              <label for="planHectares">Hectares</label>
+              <input id="planHectares" name="hectares" inputmode="decimal" type="number" min="0" step="0.01" value="${escapeAttr(plan.hectares)}" required>
+            </div>
+          </div>
+
+          <label class="check-row">
+            <input id="useMarketPrice" name="useMarket" type="checkbox" ${plan.useMarket ? "checked" : ""}>
+            <span>Usar preço atualizado de mercado automaticamente.</span>
+          </label>
+
+          <div class="field ${plan.useMarket ? "hidden" : ""}" id="manualPriceField">
+            <label for="manualPrice">Preço manual por saca</label>
+            <input id="manualPrice" name="manualPrice" inputmode="decimal" type="number" min="0" step="0.01" value="${escapeAttr(plan.manualPrice || marketPriceFor(plan.coffeeType))}">
+          </div>
+
+          <div>
+            <p class="eyebrow">Custos já conhecidos</p>
+            <div class="form-grid">
+              ${planCostFields.map((field) => `
+                <div class="field">
+                  <label for="planCost_${field.id}">${field.label}</label>
+                  <input id="planCost_${field.id}" name="cost_${field.id}" inputmode="decimal" type="number" min="0" step="0.01" value="${escapeAttr(plan.baseCosts?.[field.id] || 0)}">
+                </div>
+              `).join("")}
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="planNotes">Observações da safra</label>
+            <textarea id="planNotes" name="notes" placeholder="Opcional">${escapeHtml(plan.notes || "")}</textarea>
+          </div>
+
+          <p class="message" id="planMessage">Salvar como safra atual permite que os lançamentos diários atualizem esta previsão.</p>
+          <button class="primary" type="submit">
+            <i data-lucide="save"></i>
+            Salvar como safra atual
+          </button>
+        </form>
+      `;
+    }
+
+    function planFromForm(form, seed = null) {
+      const costs = {};
+      planCostFields.forEach((field) => {
+        costs[field.id] = Number(form.get(`cost_${field.id}`) || 0);
+      });
+      const coffeeType = String(form.get("coffeeType") || "arabica");
+      return normalizeRecord({
+        id: seed?.id || makeId("plan"),
+        kind: "plan",
+        createdAt: seed?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        date: form.get("date"),
+        cropName: form.get("cropName"),
+        coffeeType,
+        bags: Number(form.get("bags") || 0),
+        hectares: Number(form.get("hectares") || 0),
+        useMarket: form.get("useMarket") === "on",
+        manualPrice: Number(form.get("manualPrice") || marketPriceFor(coffeeType)),
+        baseCosts: costs,
+        notes: form.get("notes")
+      });
+    }
+
+    function completeResult(plan) {
+      const summary = buildSummary(plan, []);
+      const down = buildSummary({ ...plan, useMarket: false, manualPrice: summary.price * 0.95 }, []);
+      const up = buildSummary({ ...plan, useMarket: false, manualPrice: summary.price * 1.05 }, []);
+      return `
+        ${metricGrid(summary)}
+        <div class="calc-result">
+          <div class="scenario-grid">
+            <div class="scenario">
+              <span>Mercado -5%</span>
+              <strong>${money(down.profit)}</strong>
+            </div>
+            <div class="scenario">
+              <span>Preço usado</span>
+              <strong>${money(summary.profit)}</strong>
+            </div>
+            <div class="scenario">
+              <span>Mercado +5%</span>
+              <strong>${money(up.profit)}</strong>
+            </div>
+          </div>
+          <div>
+            <h4>Composição dos custos</h4>
+            ${costChart(summary.costsByCategory)}
+          </div>
+          <div>
+            <h4>Projeção de lucro por preço</h4>
+            ${projectionChart(plan)}
+          </div>
+          <div class="quick-impact">
+            <i data-lucide="${summary.profit >= 0 ? "badge-check" : "triangle-alert"}"></i>
+            <div>
+              <strong>${summary.profit >= 0 ? "Safra projetada com lucro" : "Safra projetada com prejuízo"}</strong>
+              <span>Preço de equilíbrio estimado: ${money(summary.totalCosts / Math.max(1, Number(plan.bags || 0)), 2)} por saca.</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function costChart(rows) {
+      if (!rows.length) return emptyState("Sem custos registrados", "Os custos aparecerão aqui assim que você informar a safra ou lançar operações.");
+      const max = Math.max(...rows.map((row) => row.value), 1);
+      return `<div class="chart">${rows.slice(0, 8).map((row, index) => barRow(row.label, row.value, max, index % 3 === 0 ? "blue" : index % 3 === 1 ? "sun" : "")).join("")}</div>`;
+    }
+
+    function monthlyFlowChart(transactions) {
+      if (!transactions.length) return emptyState("Sem fluxo diário", "Registre operações para acompanhar a evolução mês a mês.");
+      const map = new Map();
+      transactions.forEach((record) => {
+        const month = String(record.date || "").slice(0, 7) || "Sem data";
+        const current = map.get(month) || { label: formatMonth(month), costs: 0, income: 0 };
+        if (record.flow === "income") current.income += Number(record.amount || 0);
+        else current.costs += Number(record.amount || 0);
+        map.set(month, current);
+      });
+      const rows = Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, value]) => value).slice(-6);
+      const max = Math.max(...rows.map((row) => Math.max(row.costs, row.income)), 1);
+      return `
+        <div class="chart">
+          ${rows.map((row) => `
+            ${barRow(`${row.label} custos`, row.costs, max, "red")}
+            ${barRow(`${row.label} receitas`, row.income, max, "blue")}
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function projectionChart(plan) {
+      const basePrice = planPrice(plan);
+      const rows = [-0.1, -0.05, 0, 0.05, 0.1].map((change) => {
+        const draft = { ...plan, useMarket: false, manualPrice: basePrice * (1 + change) };
+        const summary = buildSummary(draft, []);
+        return {
+          label: `${change > 0 ? "+" : ""}${Math.round(change * 100)}%`,
+          value: summary.profit
+        };
+      });
+      const max = Math.max(...rows.map((row) => Math.abs(row.value)), 1);
+      return `<div class="chart">${rows.map((row) => barRow(row.label, row.value, max, row.value >= 0 ? "blue" : "red")).join("")}</div>`;
+    }
+
+    function barRow(label, value, max, tone = "") {
+      const width = Math.max(3, Math.min(100, (Math.abs(value) / max) * 100));
+      return `
+        <div class="bar-row">
+          <div class="bar-label">${escapeHtml(label)}</div>
+          <div class="bar-track"><span class="bar-fill ${tone}" style="width:${width}%"></span></div>
+          <div class="bar-value">${money(value)}</div>
+        </div>
+      `;
+    }
+
+    function emptyState(title, text) {
+      return `
+        <div class="empty">
+          <div>
+            <i data-lucide="clipboard-list"></i>
+            <h3>${escapeHtml(title)}</h3>
+            <p>${escapeHtml(text)}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function flowName(flow) {
+      if (flow === "income") return "Receita";
+      if (flow === "investment") return "Investimento";
+      return "Gasto";
+    }
+
+    function coffeeTypeName(id) {
+      return coffeeTypes.find((type) => type.id === id)?.label || "Café";
+    }
+
+    function formatDate(value) {
+      if (!value) return "Sem data";
+      const [year, month, day] = String(value).slice(0, 10).split("-");
+      if (!year || !month || !day) return value;
+      return `${day}/${month}/${year}`;
+    }
+
+    function formatMonth(value) {
+      if (!value || !value.includes("-")) return "Sem data";
+      const [year, month] = value.split("-");
+      return new Date(Number(year), Number(month) - 1, 1).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
+    }
+
+    function impactText(impact, record) {
+      if (!impact || record.kind !== "transaction") return "Os indicadores foram atualizados.";
+      const action = impact.profitDelta < 0 ? "reduziu" : impact.profitDelta > 0 ? "aumentou" : "manteve";
+      return `O lançamento ${action} o lucro previsto em ${money(Math.abs(impact.profitDelta))}.`;
+    }
+
+    function toast(title, text) {
+      const element = qs("#toast");
+      element.innerHTML = `<strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span>`;
+      element.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => element.classList.remove("show"), 4200);
+    }
+
+    function restoreSessionHint() {
+      try {
+        const hint = JSON.parse(sessionStorage.getItem(SESSION_HINT_KEY) || "null");
+        if (hint?.email) {
+          qs("#authEmail").value = hint.email;
+          showAuthMessage("Digite sua senha para abrir novamente seus dados criptografados.");
+        }
+      } catch (error) {
+        sessionStorage.removeItem(SESSION_HINT_KEY);
+      }
+    }
+
+    async function init() {
+      applyTheme();
+      window.addEventListener("load", refreshIcons);
+      bindGlobalEvents();
+      initTerms();
+      restoreSessionHint();
+      updateMarketUi();
+      refreshIcons();
+      await loadMarket();
+      setInterval(loadMarket, 10 * 60 * 1000);
+    }
+
+    init();
   </script>
 </body>
 </html>

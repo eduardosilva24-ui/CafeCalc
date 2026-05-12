@@ -1,4 +1,4 @@
-# Backend do CafeCalc no Google Apps Script
+# Backend do CafeCalc Rural no Google Apps Script
 
 Use este backend no mesmo Apps Script do link:
 
@@ -7,27 +7,28 @@ Use este backend no mesmo Apps Script do link:
 ## Arquivos
 
 - Cole `apps-script/Code.gs` no arquivo `Code.gs` do Apps Script.
-- Crie um arquivo HTML chamado `Index` e cole nele o conteúdo de `index.html`.
+- Crie ou atualize um arquivo HTML chamado `Index` com o conteúdo de `index.html`.
 - Faça um novo deploy do Apps Script como Web App depois de qualquer mudança.
 
-## Deploy seguro
+## Deploy recomendado
 
-1. Mantenha a planilha privada. Não compartilhe a planilha com produtores.
+1. Mantenha a planilha privada.
 2. No deploy do Web App, use:
    - **Execute as:** você, dono do projeto.
    - **Who has access:** qualquer pessoa, se o site público precisar permitir cadastro.
-3. O produtor acessa pelo site, cria uma conta com e-mail e senha, e os dados são salvos na planilha pelo backend.
-4. A planilha terá as abas `usuarios`, `sessoes`, `lancamentos` e `auditoria`.
+3. O produtor acessa pelo site, cria uma conta com e-mail e senha, aceita o termo e usa a Área do Produtor.
 
 ## Segurança aplicada
 
-- Não usa login Google.
-- A senha nunca é salva aberta: o backend grava `passwordSalt` e `passwordHash`.
-- O e-mail também não fica aberto na planilha; ele é usado como hash e aparece apenas mascarado.
-- Cada sessão gera um token temporário, salvo como hash na aba `sessoes`.
-- A sessão dura 12 horas e pode ser encerrada pelo botão **Sair**.
+- O cadastro e login são feitos pelo próprio site.
+- A senha não é salva aberta: o backend grava apenas `passwordSalt` e `passwordHash`.
+- O e-mail é usado como hash e exibido apenas mascarado.
+- Cada sessão gera um token temporário, salvo como hash.
 - Depois de 5 tentativas erradas, a conta é bloqueada por 15 minutos.
-- Cada lançamento recebe um `ownerKey`, e todas as leituras, gravações e exclusões filtram por esse dono.
-- Um produtor não consegue listar, alterar ou apagar lançamentos de outro produtor pelo backend.
+- Cada lançamento recebe `ownerKey`, e leituras, gravações e exclusões filtram por esse produtor.
+- Os dados financeiros são criptografados no navegador com AES-GCM antes de chegar ao backend.
+- A aba `lancamentos` guarda apenas `id`, `ownerKey`, datas técnicas e o envelope criptografado.
 
-Observação importante: Google Sheets não é um cofre contra o dono/admin da planilha. Para impedir até o administrador de ver os dados, seria necessário criptografia ponta a ponta ou banco com política de acesso por usuário.
+## Migração importante
+
+Versões antigas salvavam lançamentos financeiros em colunas abertas. Para cumprir a proposta de dados ilegíveis na planilha, limpe ou arquive com segurança os lançamentos antigos antes de usar esta versão em produção, ou peça que o produtor reimporte as informações pela nova Área do Produtor.

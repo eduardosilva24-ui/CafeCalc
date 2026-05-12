@@ -19,21 +19,9 @@ const RECORD_HEADERS = [
   'ownerKey',
   'createdAt',
   'updatedAt',
-  'date',
-  'plot',
-  'coffeeType',
-  'bags',
-  'hectares',
-  'price',
-  'labor',
-  'fertilizer',
-  'defensive',
-  'harvest',
-  'machine',
-  'drying',
-  'transport',
-  'other',
-  'notes'
+  'cryptoVersion',
+  'encryptedPayload',
+  'clientMeta'
 ];
 
 const USER_HEADERS = [
@@ -405,7 +393,7 @@ function listRecords_(ss, ownerKey) {
     })
     .map(rowToRecord_)
     .sort(function (a, b) {
-      return String(b.date).localeCompare(String(a.date));
+      return String(b.updatedAt || b.createdAt || b.date).localeCompare(String(a.updatedAt || a.createdAt || a.date));
     });
 }
 
@@ -414,7 +402,7 @@ function saveRecord_(ss, ownerKey, payload) {
   const rows = sheet.getDataRange().getValues();
   const now = new Date().toISOString();
   const id = cleanText_(payload.id || Utilities.getUuid(), 80);
-  const record = sanitizeRecord_(payload, id, now);
+  const record = sanitizeEncryptedRecord_(payload, id, now);
 
   for (let i = 1; i < rows.length; i++) {
     if (rows[i][0] === id && rows[i][1] !== ownerKey) {
@@ -445,28 +433,19 @@ function deleteRecord_(ss, ownerKey, id) {
   }
 }
 
-function sanitizeRecord_(payload, id, now) {
+function sanitizeEncryptedRecord_(payload, id, now) {
+  const encryptedPayload = cleanText_(payload.encryptedPayload || '', 50000);
+  if (!encryptedPayload) {
+    throw new Error('Registro protegido inválido.');
+  }
+
   return {
     id,
     createdAt: cleanText_(payload.createdAt || now, 40),
     updatedAt: now,
-    date: cleanDate_(payload.date),
-    plot: cleanText_(payload.plot || 'Fazenda', 120),
-    coffeeType: cleanText_(payload.coffeeType || 'arabica', 40),
-    bags: cleanNumber_(payload.bags),
-    hectares: cleanNumber_(payload.hectares),
-    price: cleanNumber_(payload.price),
-    costs: {
-      labor: cleanNumber_(payload.costs && payload.costs.labor),
-      fertilizer: cleanNumber_(payload.costs && payload.costs.fertilizer),
-      defensive: cleanNumber_(payload.costs && payload.costs.defensive),
-      harvest: cleanNumber_(payload.costs && payload.costs.harvest),
-      machine: cleanNumber_(payload.costs && payload.costs.machine),
-      drying: cleanNumber_(payload.costs && payload.costs.drying),
-      transport: cleanNumber_(payload.costs && payload.costs.transport),
-      other: cleanNumber_(payload.costs && payload.costs.other)
-    },
-    notes: cleanText_(payload.notes || '', 900)
+    cryptoVersion: cleanText_(payload.cryptoVersion || 'client-aes-gcm-v2', 40),
+    encryptedPayload,
+    clientMeta: cleanText_(payload.clientMeta || '', 1000)
   };
 }
 
@@ -476,44 +455,68 @@ function recordToRow_(record, ownerKey) {
     ownerKey,
     record.createdAt,
     record.updatedAt,
-    record.date,
-    record.plot,
-    record.coffeeType,
-    record.bags,
-    record.hectares,
-    record.price,
-    record.costs.labor,
-    record.costs.fertilizer,
-    record.costs.defensive,
-    record.costs.harvest,
-    record.costs.machine,
-    record.costs.drying,
-    record.costs.transport,
-    record.costs.other,
-    record.notes
+    record.cryptoVersion,
+    record.encryptedPayload,
+    record.clientMeta
   ];
 }
 
 function rowToRecord_(row) {
+  if (looksEncryptedPayload_(row[5])) {
+    return {
+      id: row[0],
+      createdAt: row[2],
+      updatedAt: row[3],
+      cryptoVersion: row[4] || 'client-aes-gcm-v2',
+      encryptedPayload: row[5],
+      clientMeta: row[6] || ''
+    };
+  }
+
+  if (looksEncryptedPayload_(row[4])) {
+    return {
+      id: row[0],
+      createdAt: row[2],
+      updatedAt: row[3],
+      cryptoVersion: 'client-aes-gcm-v2',
+      encryptedPayload: row[4],
+      clientMeta: row[5] || ''
+    };
+  }
+
+  return legacyRowToRecord_(row);
+}
+
+function looksEncryptedPayload_(value) {
+  const text = String(value || '').trim();
+  return text.indexOf('"iv"') !== -1 && text.indexOf('"data"') !== -1;
+}
+
+function legacyRowToRecord_(row) {
   return {
     id: row[0],
+    kind: 'plan',
     createdAt: row[2],
     updatedAt: row[3],
     date: row[4],
-    plot: row[5],
+    cropName: row[5] || 'Safra importada',
     coffeeType: row[6],
     bags: Number(row[7] || 0),
     hectares: Number(row[8] || 0),
-    price: Number(row[9] || 0),
-    costs: {
-      labor: Number(row[10] || 0),
-      fertilizer: Number(row[11] || 0),
-      defensive: Number(row[12] || 0),
-      harvest: Number(row[13] || 0),
-      machine: Number(row[14] || 0),
-      drying: Number(row[15] || 0),
-      transport: Number(row[16] || 0),
-      other: Number(row[17] || 0)
+    useMarket: false,
+    manualPrice: Number(row[9] || 0),
+    baseCosts: {
+      mao_obra: Number(row[10] || 0),
+      fertilizantes: Number(row[11] || 0),
+      defensivos: Number(row[12] || 0),
+      colheita: Number(row[13] || 0),
+      maquinario: Number(row[14] || 0),
+      outros: Number(row[15] || 0) + Number(row[17] || 0),
+      transporte: Number(row[16] || 0),
+      compras: 0,
+      combustivel: 0,
+      manutencao: 0,
+      irrigacao: 0
     },
     notes: row[18] || ''
   };
