@@ -7,7 +7,6 @@
   <meta name="description" content="Calculadora visual de custo, lucro, produtividade e preço de equilíbrio para produtores de café.">
   <link rel="preconnect" href="https://images.unsplash.com">
   <link rel="preconnect" href="https://raw.githubusercontent.com">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     :root {
@@ -905,6 +904,23 @@
       background: #f5f8f2;
     }
 
+    .auth-switch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .auth-switch .tab-btn {
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 12px;
+    }
+
     .secure-list {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1423,19 +1439,36 @@
               <h1>Dados da fazenda guardados por produtor.</h1>
               <p>A entrada por perguntas continua sendo o começo. Depois, o produtor pode lançar gastos, produção, preço de venda e observações sempre que precisar.</p>
               <ul class="secure-list">
-                <li><i data-lucide="key-round"></i><span>Login Google</span></li>
+                <li><i data-lucide="key-round"></i><span>Senha do site</span></li>
                 <li><i data-lucide="database-zap"></i><span>Planilha privada</span></li>
-                <li><i data-lucide="eye-off"></i><span>Filtro por usuário</span></li>
+                <li><i data-lucide="eye-off"></i><span>Filtro por produtor</span></li>
               </ul>
             </div>
             <div class="login-actions">
               <p class="mini-title">Entrar na conta</p>
-              <div id="googleSignInBox"></div>
-              <button class="primary" id="demoLoginBtn" type="button">
-                <i data-lucide="monitor-check"></i>
-                Testar neste computador
-              </button>
-              <p class="mini-text" id="loginHelp">Para produção, configure o Client ID do Google e publique o Apps Script com as novas funções de segurança.</p>
+              <div class="auth-switch" role="tablist" aria-label="Escolha entrar ou criar conta">
+                <button class="tab-btn active" type="button" data-auth-mode="login">Entrar</button>
+                <button class="tab-btn" type="button" data-auth-mode="register">Criar conta</button>
+              </div>
+              <form class="auth-form" id="authForm" novalidate>
+                <div class="field hidden" id="authNameField">
+                  <label for="authName">Nome</label>
+                  <input id="authName" name="name" type="text" autocomplete="name" maxlength="100" placeholder="Nome do produtor">
+                </div>
+                <div class="field">
+                  <label for="authEmail">E-mail</label>
+                  <input id="authEmail" name="email" type="email" autocomplete="email" required placeholder="produtor@email.com">
+                </div>
+                <div class="field">
+                  <label for="authPassword">Senha</label>
+                  <input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="Mínimo 8 caracteres">
+                </div>
+                <p class="save-state" id="loginHelp">A senha fica protegida por hash na planilha. Cada produtor só carrega os próprios lançamentos.</p>
+                <button class="primary" id="authSubmitBtn" type="submit">
+                  <i data-lucide="log-in"></i>
+                  Entrar
+                </button>
+              </form>
             </div>
           </div>
         </section>
@@ -1477,8 +1510,7 @@
   <script>
     const MARKET_URL = "https://raw.githubusercontent.com/opedromartinss/cotacoes-cafe/main/data/precos.json";
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw521BJUFg11TTgIZ9QpxhZH_TTkW7RpaOj8kpNRqPOb7xx4RIcg7hMdSsdMfgH92gpLQ/exec";
-    const SHEET_ID = "10HdjasFQ9zVkdcXw9eTQe-DKKGgz6ShbhKkVqGXrxA8";
-    const GOOGLE_CLIENT_ID = "COLE_AQUI_SEU_CLIENT_ID.apps.googleusercontent.com";
+    const AUTH_SESSION_KEY = "cafecalc.session.v1";
 
     const fallbackMarketRows = [
       { referente_a: "12/05/2026", coletado_em: "2026-05-12T08:23:52.098215", produto: "cafe", tipo: "arabica", valor: 1716.30, unidade: "saca", moeda: "BRL" },
@@ -1614,6 +1646,7 @@
       activeTab: "record",
       lastError: ""
     };
+    let authMode = "login";
 
     const wizard = document.getElementById("wizard");
     const results = document.getElementById("results");
@@ -1622,8 +1655,11 @@
     const hubContent = document.getElementById("hubContent");
     const authMini = document.getElementById("authMini");
     const openHubBtn = document.getElementById("openHubBtn");
-    const demoLoginBtn = document.getElementById("demoLoginBtn");
-    const googleSignInBox = document.getElementById("googleSignInBox");
+    const authForm = document.getElementById("authForm");
+    const authNameField = document.getElementById("authNameField");
+    const authSubmitBtn = document.getElementById("authSubmitBtn");
+    const loginHelp = document.getElementById("loginHelp");
+    const authModeButtons = document.querySelectorAll("[data-auth-mode]");
     const userChip = document.getElementById("userChip");
     const hubSubtitle = document.getElementById("hubSubtitle");
     const answerArea = document.getElementById("answerArea");
@@ -1751,165 +1787,6 @@
       refreshLucide();
     }
 
-    function isGoogleConfigured() {
-      return GOOGLE_CLIENT_ID.includes(".apps.googleusercontent.com") && !GOOGLE_CLIENT_ID.startsWith("COLE_AQUI");
-    }
-
-    function decodeJwtPayload(token) {
-      try {
-        const payload = token.split(".")[1];
-        const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-        const json = decodeURIComponent(atob(normalized).split("").map((char) => {
-          return `%${(`00${char.charCodeAt(0).toString(16)}`).slice(-2)}`;
-        }).join(""));
-        return JSON.parse(json);
-      } catch (error) {
-        return null;
-      }
-    }
-
-    function initAuth() {
-      updateAuthUi();
-
-      if (!isGoogleConfigured()) {
-        googleSignInBox.innerHTML = `<p class="mini-text">Google Client ID ainda não configurado. Use o modo teste ou configure o OAuth antes de publicar.</p>`;
-        return;
-      }
-
-      const waitForGoogle = setInterval(() => {
-        if (!window.google?.accounts?.id) return;
-        clearInterval(waitForGoogle);
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleCredentialResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true
-        });
-        window.google.accounts.id.renderButton(googleSignInBox, {
-          theme: "outline",
-          size: "large",
-          text: "signin_with",
-          shape: "rectangular"
-        });
-      }, 250);
-    }
-
-    async function handleCredentialResponse(response) {
-      const payload = decodeJwtPayload(response.credential);
-      if (!payload?.email) {
-        accountState.lastError = "Não foi possível confirmar o e-mail do Google.";
-        updateAuthUi();
-        return;
-      }
-
-      accountState.user = {
-        name: payload.name || payload.email,
-        email: payload.email,
-        picture: payload.picture || "",
-        sub: payload.sub || payload.email
-      };
-      accountState.token = response.credential;
-      accountState.mode = "google";
-      await loadProducerRecords();
-      updateAuthUi();
-      showView("hub");
-    }
-
-    async function demoLogin() {
-      accountState.user = {
-        name: "Produtor em teste",
-        email: "teste-local@cafecalc",
-        picture: "",
-        sub: "demo-local"
-      };
-      accountState.token = "";
-      accountState.mode = "demo";
-      await loadProducerRecords();
-      updateAuthUi();
-      showView("hub");
-    }
-
-    function logout() {
-      accountState.user = null;
-      accountState.token = "";
-      accountState.records = [];
-      accountState.mode = "none";
-      updateAuthUi();
-      showView("login");
-    }
-
-    function updateAuthUi() {
-      const mode = accountState.mode;
-      const user = accountState.user;
-
-      authMini.className = `security-status ${mode === "google" ? "" : mode === "demo" ? "warn" : "bad"}`;
-      authMini.innerHTML = mode === "google"
-        ? `<i data-lucide="shield-check"></i><div><p class="mini-title">Conta protegida</p><p class="mini-text">${user.email}</p></div>`
-        : mode === "demo"
-          ? `<i data-lucide="monitor-check"></i><div><p class="mini-title">Modo teste local</p><p class="mini-text">Dados só neste navegador.</p></div>`
-          : `<i data-lucide="lock-keyhole"></i><div><p class="mini-title">Sem login</p><p class="mini-text">Entre para salvar dados.</p></div>`;
-
-      if (user) {
-        userChip.innerHTML = user.picture
-          ? `<img src="${user.picture}" alt=""><span>${user.name}</span>`
-          : `<i data-lucide="user-round-check"></i><span>${user.name}</span>`;
-        hubSubtitle.textContent = mode === "google"
-          ? "Dados carregados pelo Apps Script. A planilha só deve ser acessada pelo backend."
-          : "Modo demonstração: salvos apenas no navegador deste computador.";
-      }
-
-      refreshLucide();
-    }
-
-    function localStorageKey() {
-      const id = accountState.user?.sub || "anonymous";
-      return `cafecalc.records.${id}`;
-    }
-
-    async function backendCall(action, payload = {}) {
-      if (accountState.mode !== "google") {
-        throw new Error("Sem login Google");
-      }
-
-      if (window.google?.script?.run) {
-        return new Promise((resolve, reject) => {
-          window.google.script.run
-            .withSuccessHandler(resolve)
-            .withFailureHandler(reject)
-            .cafeCalcApi({ action, token: accountState.token, payload });
-        });
-      }
-
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action, token: accountState.token, payload })
-      });
-
-      if (!response.ok) throw new Error("Backend indisponível");
-      const data = await response.json();
-      if (!data.ok) throw new Error(data.error || "Erro no backend");
-      return data;
-    }
-
-    async function loadProducerRecords() {
-      if (!accountState.user) return;
-
-      try {
-        const data = await backendCall("listRecords");
-        accountState.records = normalizeStoredRecords(data.records || []);
-        accountState.mode = "google";
-      } catch (error) {
-        const local = JSON.parse(localStorage.getItem(localStorageKey()) || "[]");
-        accountState.records = normalizeStoredRecords(local);
-        if (accountState.mode === "google") {
-          accountState.mode = "demo";
-          accountState.lastError = "Backend ainda não aceitou os novos métodos. Usando modo teste local.";
-        }
-      }
-    }
-
     function normalizeStoredRecords(records) {
       return records
         .map((record) => ({
@@ -1936,45 +1813,270 @@
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
+    function setAuthMode(mode) {
+      authMode = mode === "register" ? "register" : "login";
+      authModeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.authMode === authMode);
+      });
+
+      authNameField.classList.toggle("hidden", authMode !== "register");
+      document.getElementById("authName").required = authMode === "register";
+      document.getElementById("authPassword").autocomplete = authMode === "register" ? "new-password" : "current-password";
+      loginHelp.className = "save-state";
+      loginHelp.textContent = authMode === "register"
+        ? "Crie uma senha forte. Ela não é gravada aberta: o backend salva somente hash, sal e dados mínimos da conta."
+        : "Entre com a senha criada no site. A sessão dura 12 horas e os lançamentos vêm filtrados pelo seu produtor.";
+      renderAuthSubmitButton();
+    }
+
+    function renderAuthSubmitButton(loading = false) {
+      if (loading) {
+        authSubmitBtn.innerHTML = `<i data-lucide="loader-circle"></i>${authMode === "register" ? "Criando..." : "Entrando..."}`;
+      } else {
+        authSubmitBtn.innerHTML = authMode === "register"
+          ? `<i data-lucide="user-plus"></i>Criar conta`
+          : `<i data-lucide="log-in"></i>Entrar`;
+      }
+      refreshLucide();
+    }
+
+    function showAuthMessage(message, type = "") {
+      loginHelp.textContent = message;
+      loginHelp.className = `save-state ${type}`.trim();
+    }
+
+    async function submitAuthForm(event) {
+      event.preventDefault();
+      if (!authForm.reportValidity()) return;
+
+      const form = new FormData(authForm);
+      const payload = {
+        name: String(form.get("name") || "").trim(),
+        email: String(form.get("email") || "").trim(),
+        password: String(form.get("password") || "")
+      };
+
+      authSubmitBtn.disabled = true;
+      renderAuthSubmitButton(true);
+      showAuthMessage(authMode === "register" ? "Criando conta protegida..." : "Conferindo senha...");
+
+      try {
+        const data = await backendCall(authMode === "register" ? "register" : "login", payload);
+        accountState.user = data.user;
+        accountState.token = data.sessionToken;
+        accountState.mode = "online";
+        accountState.lastError = "";
+        saveSession(data);
+        await loadProducerRecords();
+        authForm.reset();
+        updateAuthUi();
+        showView("hub");
+      } catch (error) {
+        accountState.lastError = error.message || "Não foi possível entrar.";
+        showAuthMessage(accountState.lastError, "bad");
+      } finally {
+        authSubmitBtn.disabled = false;
+        renderAuthSubmitButton(false);
+      }
+    }
+
+    async function initAuth() {
+      setAuthMode("login");
+      updateAuthUi();
+      await restoreSession();
+    }
+
+    async function restoreSession() {
+      const saved = readSavedSession();
+      if (!saved?.token) return;
+
+      if (saved.expiresAt && new Date(saved.expiresAt) <= new Date()) {
+        clearSavedSession();
+        return;
+      }
+
+      accountState.user = saved.user || { name: "Produtor", email: "conta protegida" };
+      accountState.token = saved.token;
+      accountState.mode = "online";
+      updateAuthUi();
+
+      try {
+        const data = await backendCall("resumeSession");
+        accountState.user = data.user || accountState.user;
+        saveSession({ ...saved, user: accountState.user });
+        await loadProducerRecords();
+        updateAuthUi();
+      } catch (error) {
+        clearSavedSession();
+        accountState.user = null;
+        accountState.token = "";
+        accountState.records = [];
+        accountState.mode = "none";
+        accountState.lastError = error.message || "Sessão expirada. Entre novamente.";
+        updateAuthUi();
+      }
+    }
+
+    function readSavedSession() {
+      try {
+        return JSON.parse(sessionStorage.getItem(AUTH_SESSION_KEY) || "null");
+      } catch (error) {
+        clearSavedSession();
+        return null;
+      }
+    }
+
+    function saveSession(data) {
+      const token = data.sessionToken || data.token || accountState.token;
+      if (!token) return;
+
+      sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({
+        token,
+        expiresAt: data.expiresAt || new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+        user: data.user || accountState.user
+      }));
+    }
+
+    function clearSavedSession() {
+      sessionStorage.removeItem(AUTH_SESSION_KEY);
+    }
+
+    async function logout() {
+      try {
+        if (accountState.token) await backendCall("logout");
+      } catch (error) {
+        // A sessão local deve ser limpa mesmo se o backend já a encerrou.
+      }
+
+      clearSavedSession();
+      accountState.user = null;
+      accountState.token = "";
+      accountState.records = [];
+      accountState.mode = "none";
+      accountState.lastError = "";
+      updateAuthUi();
+      showView("login");
+    }
+
+    function updateAuthUi() {
+      const user = accountState.user;
+      const isOnline = accountState.mode === "online" && Boolean(accountState.token);
+
+      authMini.className = `security-status ${isOnline ? "" : "bad"}`;
+      authMini.innerHTML = isOnline
+        ? `<i data-lucide="shield-check"></i><div><p class="mini-title">Conta protegida</p><p class="mini-text">${escapeHtml(user.email)}</p></div>`
+        : `<i data-lucide="lock-keyhole"></i><div><p class="mini-title">Sem login</p><p class="mini-text">Entre para salvar dados.</p></div>`;
+
+      if (user) {
+        userChip.innerHTML = `<i data-lucide="user-round-check"></i><span>${escapeHtml(user.name)}</span>`;
+        hubSubtitle.textContent = "Dados carregados pelo Apps Script. A planilha fica privada e o backend entrega só os lançamentos deste produtor.";
+      } else {
+        userChip.innerHTML = `<i data-lucide="user-round-check"></i><span>Produtor</span>`;
+      }
+
+      refreshLucide();
+    }
+
+    async function backendCall(action, payload = {}) {
+      const request = { action, payload };
+      if (accountState.token) request.sessionToken = accountState.token;
+
+      if (window.google?.script?.run) {
+        return new Promise((resolve, reject) => {
+          window.google.script.run
+            .withSuccessHandler((data) => {
+              if (!data?.ok) {
+                reject(new Error(data?.error || "Erro no backend"));
+                return;
+              }
+              resolve(data);
+            })
+            .withFailureHandler(reject)
+            .cafeCalcApi(request);
+        });
+      }
+
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(request)
+      });
+
+      if (!response.ok) throw new Error("Backend indisponível");
+      const data = await response.json();
+      if (!data.ok) throw new Error(data.error || "Erro no backend");
+      return data;
+    }
+
+    async function loadProducerRecords() {
+      if (!accountState.token) return;
+
+      try {
+        const data = await backendCall("listRecords");
+        accountState.records = normalizeStoredRecords(data.records || []);
+        accountState.mode = "online";
+        accountState.lastError = "";
+      } catch (error) {
+        accountState.records = [];
+        accountState.lastError = error.message || "Não consegui carregar os lançamentos.";
+        if (/sess/i.test(accountState.lastError)) {
+          clearSavedSession();
+          accountState.user = null;
+          accountState.token = "";
+          accountState.mode = "none";
+          showView("login");
+        }
+      }
+    }
+
     async function persistRecords() {
-      localStorage.setItem(localStorageKey(), JSON.stringify(accountState.records));
+      return true;
     }
 
     async function saveProducerRecord(record) {
+      if (!accountState.token) {
+        accountState.lastError = "Entre na conta para salvar na planilha.";
+        updateAuthUi();
+        showView("login");
+        return false;
+      }
+
       const clean = normalizeStoredRecords([record])[0];
-      const existingIndex = accountState.records.findIndex((item) => item.id === clean.id);
-      if (existingIndex >= 0) {
-        accountState.records[existingIndex] = clean;
-      } else {
-        accountState.records.unshift(clean);
-      }
-      accountState.records = normalizeStoredRecords(accountState.records);
 
-      if (accountState.mode === "google") {
-        try {
-          await backendCall("saveRecord", clean);
-        } catch (error) {
-          accountState.mode = "demo";
-          accountState.lastError = "Não consegui gravar online. Mantive uma cópia local para não perder o lançamento.";
+      try {
+        const data = await backendCall("saveRecord", clean);
+        const saved = normalizeStoredRecords([data.record || clean])[0];
+        const existingIndex = accountState.records.findIndex((item) => item.id === saved.id);
+        if (existingIndex >= 0) {
+          accountState.records[existingIndex] = saved;
+        } else {
+          accountState.records.unshift(saved);
         }
+        accountState.records = normalizeStoredRecords(accountState.records);
+        accountState.lastError = "";
+        updateAuthUi();
+        renderHub();
+        return true;
+      } catch (error) {
+        accountState.lastError = error.message || "Não consegui salvar na planilha.";
+        updateAuthUi();
+        renderHub();
+        return false;
       }
-
-      await persistRecords();
-      updateAuthUi();
-      renderHub();
     }
 
     async function deleteProducerRecord(id) {
-      accountState.records = accountState.records.filter((record) => record.id !== id);
-      if (accountState.mode === "google") {
-        try {
-          await backendCall("deleteRecord", { id });
-        } catch (error) {
-          accountState.mode = "demo";
-          accountState.lastError = "Não consegui apagar online. Removi apenas a cópia local.";
-        }
+      if (!accountState.token) return;
+
+      try {
+        await backendCall("deleteRecord", { id });
+        accountState.records = accountState.records.filter((record) => record.id !== id);
+        accountState.lastError = "";
+      } catch (error) {
+        accountState.lastError = error.message || "Não consegui apagar o lançamento.";
       }
-      await persistRecords();
+
       updateAuthUi();
       renderHub();
     }
@@ -2221,9 +2323,9 @@
               <p class="eyebrow">Lançamento</p>
               <h2 class="choice-name">Registrar produção e gastos</h2>
             </div>
-            <span class="source-state ${accountState.mode === "google" ? "" : "warn"}">
-              <i data-lucide="${accountState.mode === "google" ? "cloud-check" : "hard-drive"}"></i>
-              ${accountState.mode === "google" ? "online" : "local"}
+            <span class="source-state ${accountState.mode === "online" ? "" : "warn"}">
+              <i data-lucide="${accountState.mode === "online" ? "cloud-check" : "cloud-off"}"></i>
+              ${accountState.mode === "online" ? "planilha" : "sem sessão"}
             </span>
           </div>
 
@@ -2300,7 +2402,8 @@
         const form = new FormData(event.currentTarget);
         const record = recordFromForm(form);
         document.getElementById("saveState").textContent = "Salvando...";
-        await saveProducerRecord(record);
+        const saved = await saveProducerRecord(record);
+        if (!saved) return;
         accountState.lastError = "";
         accountState.activeTab = "analysis";
         renderHub();
@@ -2463,7 +2566,7 @@
             </table>
           </div>
           <div class="danger-zone">
-            <span>Dados sensíveis: mantenha a planilha privada e o Apps Script publicado com verificação de token.</span>
+            <span>Dados sensíveis: mantenha a planilha privada e publique o Apps Script para executar como proprietário.</span>
             <button class="secondary" type="button" id="logoutBtn">
               <i data-lucide="log-out"></i>
               Sair
@@ -2787,7 +2890,8 @@
           speak("Entre na conta para salvar os dados da fazenda.");
           return;
         }
-        await saveProducerRecord(recordFromIntro());
+        const saved = await saveProducerRecord(recordFromIntro());
+        if (!saved) return;
         accountState.activeTab = "analysis";
         showView("hub");
       });
@@ -2995,7 +3099,10 @@
     speakBtn.addEventListener("click", () => speak(stepSpeakText()));
     repeatAudio.addEventListener("click", () => speak(latestSpeech || stepSpeakText()));
     openHubBtn.addEventListener("click", () => showView(accountState.user ? "hub" : "login"));
-    demoLoginBtn.addEventListener("click", demoLogin);
+    authForm.addEventListener("submit", submitAuthForm);
+    authModeButtons.forEach((button) => {
+      button.addEventListener("click", () => setAuthMode(button.dataset.authMode));
+    });
     document.querySelectorAll("[data-hub-tab]").forEach((button) => {
       button.addEventListener("click", () => {
         accountState.activeTab = button.dataset.hubTab;

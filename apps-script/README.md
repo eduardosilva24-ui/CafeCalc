@@ -8,24 +8,26 @@ Use este backend no mesmo Apps Script do link:
 
 - Cole `apps-script/Code.gs` no arquivo `Code.gs` do Apps Script.
 - Crie um arquivo HTML chamado `Index` e cole nele o conteúdo de `index.html`.
+- Faça um novo deploy do Apps Script como Web App depois de qualquer mudança.
 
-## Configuração obrigatória
+## Deploy seguro
 
-1. No Google Cloud do projeto do Apps Script, crie um OAuth Client ID do tipo Web.
-2. Adicione em "Authorized JavaScript origins" a origem onde o app será aberto, sem caminho. Exemplos: `http://127.0.0.1:8088` para teste local ou a origem pública final do app.
-3. Copie o Client ID.
-4. No Apps Script, abra `Project Settings` e adicione uma Script Property:
-   - Nome: `GOOGLE_CLIENT_ID`
-   - Valor: o Client ID criado.
-5. No `index.html`, troque `COLE_AQUI_SEU_CLIENT_ID.apps.googleusercontent.com` pelo mesmo Client ID.
-6. Faça novo deploy do Apps Script como Web App.
+1. Mantenha a planilha privada. Não compartilhe a planilha com produtores.
+2. No deploy do Web App, use:
+   - **Execute as:** você, dono do projeto.
+   - **Who has access:** qualquer pessoa, se o site público precisar permitir cadastro.
+3. O produtor acessa pelo site, cria uma conta com e-mail e senha, e os dados são salvos na planilha pelo backend.
+4. A planilha terá as abas `usuarios`, `sessoes`, `lancamentos` e `auditoria`.
 
 ## Segurança aplicada
 
-- O app não usa senha própria.
-- O backend só aceita token Google válido e emitido para o Client ID configurado.
-- Cada linha da planilha recebe um `ownerKey` derivado do identificador Google do usuário.
-- As leituras, gravações e exclusões filtram sempre pelo `ownerKey`.
-- A planilha não precisa ser compartilhada com os produtores.
+- Não usa login Google.
+- A senha nunca é salva aberta: o backend grava `passwordSalt` e `passwordHash`.
+- O e-mail também não fica aberto na planilha; ele é usado como hash e aparece apenas mascarado.
+- Cada sessão gera um token temporário, salvo como hash na aba `sessoes`.
+- A sessão dura 12 horas e pode ser encerrada pelo botão **Sair**.
+- Depois de 5 tentativas erradas, a conta é bloqueada por 15 minutos.
+- Cada lançamento recebe um `ownerKey`, e todas as leituras, gravações e exclusões filtram por esse dono.
+- Um produtor não consegue listar, alterar ou apagar lançamentos de outro produtor pelo backend.
 
-Observação importante: Google Sheets não é um cofre de sigilo absoluto contra o dono/admin da planilha. Para que literalmente ninguém além do produtor veja os dados, seria necessário criptografia ponta a ponta ou um banco com política de acesso por usuário.
+Observação importante: Google Sheets não é um cofre contra o dono/admin da planilha. Para impedir até o administrador de ver os dados, seria necessário criptografia ponta a ponta ou banco com política de acesso por usuário.
