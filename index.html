@@ -1,0 +1,3013 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CafeCalc Rural</title>
+  <meta name="description" content="Calculadora visual de custo, lucro, produtividade e preço de equilíbrio para produtores de café.">
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="preconnect" href="https://raw.githubusercontent.com">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --leaf: #246b4a;
+      --leaf-2: #154f3a;
+      --sun: #f4b740;
+      --sky: #4a90a4;
+      --soil: #5a4034;
+      --ink: #17231d;
+      --muted: #5d6b62;
+      --paper: #fbfaf5;
+      --line: #dfe4da;
+      --good: #1f8a4c;
+      --warn: #c47a0a;
+      --bad: #c24135;
+      --soft-good: #e5f4eb;
+      --soft-warn: #fff3d9;
+      --soft-bad: #fde8e5;
+      --white: #fff;
+      --shadow: 0 18px 50px rgba(23, 35, 29, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: #edf2ea;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        linear-gradient(90deg, rgba(237, 242, 234, 0.94), rgba(237, 242, 234, 0.82)),
+        url("https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&w=1800&q=80");
+      background-size: cover;
+      background-position: center;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+      gap: 20px;
+      width: min(1180px, calc(100% - 28px));
+      min-height: calc(100vh - 28px);
+      margin: 14px auto;
+    }
+
+    .side,
+    .main {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(223, 228, 218, 0.88);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .side {
+      display: flex;
+      flex-direction: column;
+      min-height: 720px;
+      overflow: hidden;
+    }
+
+    .brand {
+      padding: 22px;
+      color: var(--white);
+      background: linear-gradient(140deg, var(--leaf-2), var(--leaf));
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+
+    .logo-mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      color: var(--leaf-2);
+      background: var(--sun);
+      border-radius: 8px;
+    }
+
+    .logo-mark svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .brand-sub {
+      margin: 16px 0 0;
+      max-width: 28ch;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    .audio-btn,
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 46px;
+      height: 46px;
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .audio-btn:hover,
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .side-photo {
+      position: relative;
+      min-height: 154px;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.42)),
+        url("https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?auto=format&fit=crop&w=1000&q=80");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .market {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .market-head,
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .source-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 5px 8px;
+      border-radius: 8px;
+      color: var(--leaf-2);
+      background: var(--soft-good);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .source-state.warn {
+      color: var(--warn);
+      background: var(--soft-warn);
+    }
+
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .price-tile,
+    .metric,
+    .choice-card,
+    .chart-box,
+    .diagnosis,
+    .input-shell {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+    }
+
+    .price-tile {
+      padding: 12px;
+    }
+
+    .price-label {
+      margin: 0 0 5px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .price-value {
+      margin: 0;
+      color: var(--leaf-2);
+      font-size: 23px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .market-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .side-status {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .mini-list li {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 10px;
+      align-items: center;
+      min-height: 50px;
+      padding: 9px;
+      background: #f4f7f0;
+      border-radius: 8px;
+    }
+
+    .mini-list svg {
+      width: 24px;
+      height: 24px;
+      color: var(--leaf);
+    }
+
+    .mini-title {
+      margin: 0;
+      font-weight: 800;
+    }
+
+    .mini-text {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .main {
+      display: flex;
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .workspace {
+      display: grid;
+      align-content: start;
+      gap: 20px;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .progress-wrap {
+      display: grid;
+      gap: 8px;
+    }
+
+    .progress-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .progress-line {
+      height: 12px;
+      overflow: hidden;
+      background: #dfe8da;
+      border-radius: 8px;
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--leaf), var(--sun));
+      transition: width 240ms ease;
+    }
+
+    .question-panel {
+      display: grid;
+      gap: 22px;
+      min-height: 520px;
+    }
+
+    .question-title {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+    }
+
+    .question-title span {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .question-title strong {
+      font-size: clamp(32px, 5vw, 58px);
+      line-height: 1.03;
+      letter-spacing: 0;
+    }
+
+    .question-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 72px;
+      height: 72px;
+      color: var(--leaf-2);
+      background: var(--soft-good);
+      border: 1px solid #cae8d7;
+      border-radius: 8px;
+    }
+
+    .question-icon svg {
+      width: 42px;
+      height: 42px;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .choice-card {
+      display: grid;
+      gap: 12px;
+      min-height: 180px;
+      padding: 16px;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .choice-card:hover {
+      border-color: var(--leaf);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(36, 107, 74, 0.12);
+    }
+
+    .choice-card.active {
+      border-color: var(--leaf);
+      background: var(--soft-good);
+      box-shadow: inset 0 0 0 2px rgba(36, 107, 74, 0.16);
+    }
+
+    .choice-card svg {
+      width: 34px;
+      height: 34px;
+      color: var(--leaf);
+    }
+
+    .choice-name {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.08;
+    }
+
+    .choice-desc,
+    .choice-price {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .choice-price {
+      color: var(--soil);
+      font-weight: 900;
+    }
+
+    .number-area {
+      display: grid;
+      gap: 16px;
+      max-width: 760px;
+    }
+
+    .input-shell {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 72px;
+      overflow: hidden;
+    }
+
+    .step-btn {
+      display: grid;
+      min-height: 102px;
+      place-items: center;
+      color: var(--white);
+      background: var(--leaf);
+      cursor: pointer;
+    }
+
+    .step-btn:hover {
+      background: var(--leaf-2);
+    }
+
+    .step-btn svg {
+      width: 34px;
+      height: 34px;
+    }
+
+    .answer-input {
+      width: 100%;
+      min-width: 0;
+      padding: 18px 16px;
+      color: var(--ink);
+      background: var(--white);
+      border: 0;
+      border-right: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+      font-size: clamp(38px, 7vw, 76px);
+      font-weight: 900;
+      line-height: 1;
+      text-align: center;
+      outline: none;
+    }
+
+    .unit-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .unit-badge,
+    .quick-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-weight: 900;
+    }
+
+    .unit-badge {
+      color: var(--soil);
+      background: #f1ece3;
+    }
+
+    .quick-btn {
+      color: var(--leaf-2);
+      background: #e8f3ed;
+      border: 1px solid #cfe5d7;
+      cursor: pointer;
+    }
+
+    .quick-btn:hover {
+      background: #d8ecdf;
+    }
+
+    .price-source-box {
+      display: grid;
+      gap: 16px;
+      max-width: 760px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+    }
+
+    .price-source-top {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+    }
+
+    .price-source-top svg {
+      width: 48px;
+      height: 48px;
+      color: var(--sky);
+    }
+
+    .source-price {
+      margin: 0;
+      color: var(--leaf-2);
+      font-size: clamp(36px, 6vw, 62px);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .source-caption {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .nav-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 6px;
+    }
+
+    .primary,
+    .secondary,
+    .ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 54px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .primary {
+      color: var(--white);
+      background: var(--leaf);
+    }
+
+    .primary:hover {
+      background: var(--leaf-2);
+    }
+
+    .secondary {
+      color: var(--leaf-2);
+      background: #e7f1ec;
+      border: 1px solid #cbe3d4;
+    }
+
+    .secondary:hover {
+      background: #d8eadf;
+    }
+
+    .ghost {
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .ghost:hover {
+      color: var(--leaf-2);
+      background: #eef4ea;
+    }
+
+    .primary svg,
+    .secondary svg,
+    .ghost svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .error {
+      display: none;
+      margin: 0;
+      color: var(--bad);
+      font-weight: 900;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .results {
+      display: none;
+      gap: 20px;
+    }
+
+    .results.show {
+      display: grid;
+    }
+
+    .result-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      padding: 20px;
+      color: var(--white);
+      background: linear-gradient(140deg, var(--leaf-2), #267d69);
+      border-radius: 8px;
+    }
+
+    .result-hero.bad {
+      background: linear-gradient(140deg, #8f2d27, var(--bad));
+    }
+
+    .result-hero.warn {
+      background: linear-gradient(140deg, #8d5b09, var(--warn));
+    }
+
+    .result-hero h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .result-hero p {
+      margin: 10px 0 0;
+      max-width: 78ch;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      display: grid;
+      gap: 8px;
+      min-height: 144px;
+      padding: 16px;
+    }
+
+    .metric svg {
+      width: 30px;
+      height: 30px;
+      color: var(--leaf);
+    }
+
+    .metric-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      margin: 0;
+      font-size: 29px;
+      font-weight: 900;
+      line-height: 1.05;
+    }
+
+    .metric-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .chart-box {
+      display: grid;
+      gap: 12px;
+      min-height: 292px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .chart-box.wide {
+      grid-column: 1 / -1;
+    }
+
+    .chart-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .chart-title h2 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.12;
+    }
+
+    .chart-title span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .bar-list {
+      display: grid;
+      gap: 11px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(98px, 156px) minmax(0, 1fr) 110px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .bar-label {
+      overflow-wrap: anywhere;
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .bar-track {
+      height: 18px;
+      overflow: hidden;
+      background: #e8ede4;
+      border-radius: 8px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      min-width: 2px;
+      background: var(--leaf);
+      border-radius: 8px;
+    }
+
+    .bar-value {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .chart-svg {
+      width: 100%;
+      min-height: 216px;
+    }
+
+    .chart-svg text {
+      fill: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .diagnosis {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      background: #fffdf7;
+    }
+
+    .diagnosis h2 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .diagnosis p {
+      margin: 0;
+      color: #28382f;
+      font-size: 20px;
+      line-height: 1.48;
+    }
+
+    .security-card {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .security-status {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid #cfe5d7;
+      border-radius: 8px;
+      background: var(--soft-good);
+    }
+
+    .security-status.warn {
+      border-color: #ead39d;
+      background: var(--soft-warn);
+    }
+
+    .security-status.bad {
+      border-color: #efc3bd;
+      background: var(--soft-bad);
+    }
+
+    .security-status svg {
+      width: 28px;
+      height: 28px;
+      color: var(--leaf);
+    }
+
+    .security-status.warn svg {
+      color: var(--warn);
+    }
+
+    .security-status.bad svg {
+      color: var(--bad);
+    }
+
+    .account-gate,
+    .producer-hub {
+      display: grid;
+      gap: 18px;
+    }
+
+    .login-hero,
+    .hub-top,
+    .record-form,
+    .analysis-panel,
+    .history-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+    }
+
+    .login-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+      gap: 18px;
+      align-items: center;
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .login-copy {
+      display: grid;
+      gap: 14px;
+    }
+
+    .login-copy h1,
+    .hub-title h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.04;
+    }
+
+    .login-copy p,
+    .hub-title p,
+    .analysis-panel p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.48;
+    }
+
+    .login-actions {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      padding: 16px;
+      border-radius: 8px;
+      background: #f5f8f2;
+    }
+
+    .secure-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .secure-list li {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 8px;
+      align-items: center;
+      min-height: 58px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #f4f7f0;
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .secure-list svg {
+      width: 24px;
+      height: 24px;
+      color: var(--leaf);
+    }
+
+    .hub-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      padding: 18px;
+    }
+
+    .user-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 46px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f7f8f3;
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .user-chip img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+    }
+
+    .tab-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--muted);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      border-color: var(--leaf);
+      background: var(--soft-good);
+      color: var(--leaf-2);
+    }
+
+    .tab-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .record-form,
+    .analysis-panel,
+    .history-panel {
+      display: grid;
+      gap: 16px;
+      padding: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--white);
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--leaf);
+      box-shadow: 0 0 0 3px rgba(36, 107, 74, 0.12);
+    }
+
+    .cost-form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .save-state {
+      min-height: 24px;
+      margin: 0;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .save-state.good {
+      color: var(--good);
+    }
+
+    .save-state.bad {
+      color: var(--bad);
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .insight-list li {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border-radius: 8px;
+      background: #f7f8f3;
+      line-height: 1.42;
+    }
+
+    .insight-list svg {
+      width: 22px;
+      height: 22px;
+      color: var(--leaf);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .data-table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      background: var(--white);
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .data-table th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      background: #f4f7f0;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .empty-state {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      padding: 24px;
+      border: 1px dashed #c8d6c7;
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+      background: #f7f8f3;
+    }
+
+    .empty-state svg {
+      width: 46px;
+      height: 46px;
+      margin-bottom: 10px;
+      color: var(--leaf);
+    }
+
+    .danger-zone {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--soft-bad);
+      color: var(--bad);
+      font-weight: 900;
+    }
+
+    .plain-link {
+      color: var(--leaf-2);
+      font-weight: 900;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        min-height: auto;
+      }
+
+      .side-photo,
+      .side-status {
+        display: none;
+      }
+
+      .choice-grid,
+      .metric-grid,
+      .charts-grid,
+      .secure-list,
+      .form-grid,
+      .cost-form-grid,
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-box.wide {
+        grid-column: auto;
+      }
+
+      .login-hero,
+      .hub-top {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        width: min(100% - 16px, 1180px);
+        margin: 8px auto;
+      }
+
+      .main,
+      .brand,
+      .market {
+        padding: 16px;
+      }
+
+      .logo {
+        font-size: 24px;
+      }
+
+      .question-title strong {
+        font-size: 34px;
+      }
+
+      .choice-card {
+        min-height: 150px;
+      }
+
+      .input-shell {
+        grid-template-columns: 60px minmax(0, 1fr) 60px;
+      }
+
+      .step-btn {
+        min-height: 92px;
+      }
+
+      .answer-input {
+        font-size: 44px;
+      }
+
+      .result-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-value {
+        text-align: left;
+      }
+    }
+
+    @media print {
+      body {
+        background: var(--white);
+      }
+
+      .side,
+      .nav-row,
+      .hero-actions,
+      .progress-wrap {
+        display: none;
+      }
+
+      .app,
+      .main {
+        display: block;
+        width: auto;
+        min-height: auto;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border: 0;
+      }
+
+      .chart-box,
+      .metric,
+      .diagnosis,
+      .result-hero {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="side" aria-label="Resumo do CafeCalc">
+      <div class="brand">
+        <div class="brand-row">
+          <div class="logo">
+            <span class="logo-mark"><i data-lucide="coffee"></i></span>
+            <span>CafeCalc</span>
+          </div>
+          <button class="audio-btn" id="repeatAudio" type="button" aria-label="Ouvir novamente">
+            <i data-lucide="volume-2"></i>
+          </button>
+        </div>
+        <p class="brand-sub">Custo, lucro, produtividade e risco de preço para a lavoura de café.</p>
+      </div>
+
+      <div class="side-photo" role="img" aria-label="Imagem de café colhido na fazenda"></div>
+
+      <section class="market" aria-label="Mercado do café">
+        <div class="market-head">
+          <p class="eyebrow">Mercado</p>
+          <span class="source-state warn" id="sourceState">
+            <i data-lucide="cloud"></i>
+            carregando
+          </span>
+        </div>
+
+        <div class="price-grid">
+          <div class="price-tile">
+            <p class="price-label">Arábica</p>
+            <p class="price-value" id="arabicaPrice">R$ --</p>
+          </div>
+          <div class="price-tile">
+            <p class="price-label">Conilon</p>
+            <p class="price-value" id="conillonPrice">R$ --</p>
+          </div>
+        </div>
+
+        <p class="market-note" id="marketNote">Valores por saca. O preço local pode mudar por bebida, qualidade, peneira, frete e comprador.</p>
+      </section>
+
+      <section class="security-card" aria-label="Conta do produtor">
+        <p class="eyebrow">Conta do produtor</p>
+        <div class="security-status warn" id="authMini">
+          <i data-lucide="lock-keyhole"></i>
+          <div>
+            <p class="mini-title">Sem login</p>
+            <p class="mini-text">Entre para salvar dados da fazenda.</p>
+          </div>
+        </div>
+        <button class="secondary" id="openHubBtn" type="button">
+          <i data-lucide="shield-check"></i>
+          Área do produtor
+        </button>
+      </section>
+
+      <section class="side-status" aria-label="Pontos calculados">
+        <p class="eyebrow">O que sai no final</p>
+        <ul class="mini-list">
+          <li>
+            <i data-lucide="badge-dollar-sign"></i>
+            <div>
+              <p class="mini-title">Preço de equilíbrio</p>
+              <p class="mini-text">A saca mínima para pagar os custos.</p>
+            </div>
+          </li>
+          <li>
+            <i data-lucide="chart-no-axes-combined"></i>
+            <div>
+              <p class="mini-title">Gráficos da fazenda</p>
+              <p class="mini-text">Custos, produtividade, lucro e risco.</p>
+            </div>
+          </li>
+          <li>
+            <i data-lucide="speech"></i>
+            <div>
+              <p class="mini-title">Leitura em voz alta</p>
+              <p class="mini-text">As perguntas podem ser ouvidas.</p>
+            </div>
+          </li>
+        </ul>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="workspace">
+        <section class="question-panel" id="wizard" aria-live="polite">
+          <div class="progress-wrap">
+            <div class="progress-top">
+              <span id="stepCounter">Pergunta 1</span>
+              <span id="stepHint">CafeCalc Rural</span>
+            </div>
+            <div class="progress-line" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <div class="question-icon" id="questionIcon" aria-hidden="true">
+            <i data-lucide="coffee"></i>
+          </div>
+
+          <h1 class="question-title">
+            <span id="questionKicker">Começo</span>
+            <strong id="questionText">Qual café você quer calcular?</strong>
+          </h1>
+
+          <div id="answerArea"></div>
+          <p class="error" id="errorText">Informe um valor válido.</p>
+
+          <div class="nav-row">
+            <button class="ghost" id="backBtn" type="button">
+              <i data-lucide="arrow-left"></i>
+              Voltar
+            </button>
+            <div class="unit-row">
+              <button class="secondary" id="speakBtn" type="button">
+                <i data-lucide="volume-2"></i>
+                Ouvir
+              </button>
+              <button class="primary" id="nextBtn" type="button">
+                Avançar
+                <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="results" id="results" aria-live="polite"></section>
+
+        <section class="account-gate hidden" id="accountGate" aria-live="polite">
+          <div class="login-hero">
+            <div class="login-copy">
+              <p class="eyebrow">Área segura</p>
+              <h1>Dados da fazenda guardados por produtor.</h1>
+              <p>A entrada por perguntas continua sendo o começo. Depois, o produtor pode lançar gastos, produção, preço de venda e observações sempre que precisar.</p>
+              <ul class="secure-list">
+                <li><i data-lucide="key-round"></i><span>Login Google</span></li>
+                <li><i data-lucide="database-zap"></i><span>Planilha privada</span></li>
+                <li><i data-lucide="eye-off"></i><span>Filtro por usuário</span></li>
+              </ul>
+            </div>
+            <div class="login-actions">
+              <p class="mini-title">Entrar na conta</p>
+              <div id="googleSignInBox"></div>
+              <button class="primary" id="demoLoginBtn" type="button">
+                <i data-lucide="monitor-check"></i>
+                Testar neste computador
+              </button>
+              <p class="mini-text" id="loginHelp">Para produção, configure o Client ID do Google e publique o Apps Script com as novas funções de segurança.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="producer-hub hidden" id="producerHub" aria-live="polite">
+          <div class="hub-top">
+            <div class="hub-title">
+              <p class="eyebrow">Caderno da fazenda</p>
+              <h1>Área do produtor</h1>
+              <p id="hubSubtitle">Salve lançamentos e acompanhe a lavoura ao longo do tempo.</p>
+            </div>
+            <div class="user-chip" id="userChip">
+              <i data-lucide="user-round-check"></i>
+              <span>Produtor</span>
+            </div>
+          </div>
+
+          <div class="tab-row" role="tablist" aria-label="Área do produtor">
+            <button class="tab-btn active" type="button" data-hub-tab="record">
+              <i data-lucide="plus-circle"></i>
+              Lançar dados
+            </button>
+            <button class="tab-btn" type="button" data-hub-tab="analysis">
+              <i data-lucide="chart-no-axes-combined"></i>
+              Análise
+            </button>
+            <button class="tab-btn" type="button" data-hub-tab="history">
+              <i data-lucide="table-properties"></i>
+              Histórico
+            </button>
+          </div>
+
+          <div id="hubContent"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const MARKET_URL = "https://raw.githubusercontent.com/opedromartinss/cotacoes-cafe/main/data/precos.json";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw521BJUFg11TTgIZ9QpxhZH_TTkW7RpaOj8kpNRqPOb7xx4RIcg7hMdSsdMfgH92gpLQ/exec";
+    const SHEET_ID = "10HdjasFQ9zVkdcXw9eTQe-DKKGgz6ShbhKkVqGXrxA8";
+    const GOOGLE_CLIENT_ID = "COLE_AQUI_SEU_CLIENT_ID.apps.googleusercontent.com";
+
+    const fallbackMarketRows = [
+      { referente_a: "12/05/2026", coletado_em: "2026-05-12T08:23:52.098215", produto: "cafe", tipo: "arabica", valor: 1716.30, unidade: "saca", moeda: "BRL" },
+      { referente_a: "12/05/2026", coletado_em: "2026-05-12T08:23:52.098215", produto: "cafe", tipo: "conillon", valor: 943.54, unidade: "saca", moeda: "BRL" },
+      { referente_a: "11/05/2026", coletado_em: "2026-05-11T19:12:36.074886", produto: "cafe", tipo: "arabica", valor: 1716.30, unidade: "saca", moeda: "BRL" },
+      { referente_a: "11/05/2026", coletado_em: "2026-05-11T19:12:36.074886", produto: "cafe", tipo: "conillon", valor: 943.54, unidade: "saca", moeda: "BRL" },
+      { referente_a: "10/05/2026", coletado_em: "2026-05-10T18:54:28.584527", produto: "cafe", tipo: "arabica", valor: 1669.93, unidade: "saca", moeda: "BRL" },
+      { referente_a: "10/05/2026", coletado_em: "2026-05-10T18:54:28.584527", produto: "cafe", tipo: "conillon", valor: 912.99, unidade: "saca", moeda: "BRL" }
+    ];
+
+    const coffeeTypes = [
+      {
+        id: "arabica",
+        base: "arabica",
+        factor: 1,
+        label: "Arábica tipo 6",
+        short: "Arábica",
+        icon: "coffee",
+        text: "Referência comum de mercado.",
+        low: 20,
+        good: 35
+      },
+      {
+        id: "arabica_cd",
+        base: "arabica",
+        factor: 1.08,
+        label: "Cereja descascado",
+        short: "CD",
+        icon: "sparkles",
+        text: "Estimativa com prêmio por preparo.",
+        low: 20,
+        good: 35
+      },
+      {
+        id: "arabica_especial",
+        base: "arabica",
+        factor: 1.18,
+        label: "Arábica especial",
+        short: "Especial",
+        icon: "award",
+        text: "Estimativa com prêmio de qualidade.",
+        low: 18,
+        good: 32
+      },
+      {
+        id: "arabica_natural",
+        base: "arabica",
+        factor: 0.98,
+        label: "Arábica natural",
+        short: "Natural",
+        icon: "sun",
+        text: "Referência próxima do arábica base.",
+        low: 20,
+        good: 35
+      },
+      {
+        id: "conillon",
+        base: "conillon",
+        factor: 1,
+        label: "Conilon / robusta",
+        short: "Conilon",
+        icon: "sprout",
+        text: "Referência de mercado conilon.",
+        low: 35,
+        good: 65
+      },
+      {
+        id: "conillon_especial",
+        base: "conillon",
+        factor: 1.12,
+        label: "Conilon especial",
+        short: "Conilon especial",
+        icon: "medal",
+        text: "Estimativa com prêmio de qualidade.",
+        low: 35,
+        good: 65
+      }
+    ];
+
+    const costFields = [
+      { id: "labor", label: "Mão de obra", icon: "users", question: "Quanto gastou com gente trabalhando?", quick: [0, 500, 1000, 5000] },
+      { id: "fertilizer", label: "Adubo e calcário", icon: "wheat", question: "Quanto gastou com adubo, calcário e corretivos?", quick: [0, 500, 2000, 8000] },
+      { id: "defensive", label: "Defensivos", icon: "shield-check", question: "Quanto gastou com defensivos?", quick: [0, 300, 1000, 3000] },
+      { id: "harvest", label: "Colheita e pós-colheita", icon: "hand-coins", question: "Quanto gastou na colheita e no pós-colheita?", quick: [0, 1000, 5000, 10000] },
+      { id: "machine", label: "Máquinas e diesel", icon: "tractor", question: "Quanto gastou com máquinas, trator e diesel?", quick: [0, 500, 2000, 6000] },
+      { id: "drying", label: "Secagem e beneficiamento", icon: "warehouse", question: "Quanto gastou com secagem e beneficiamento?", quick: [0, 500, 1500, 4000] },
+      { id: "transport", label: "Transporte e comissão", icon: "truck", question: "Quanto gastou com transporte, sacaria, comissão e taxas?", quick: [0, 300, 1000, 3000] },
+      { id: "other", label: "Outros custos", icon: "receipt-text", question: "Teve outros custos?", quick: [0, 200, 1000, 3000] }
+    ];
+
+    const steps = [
+      { id: "coffeeType", kind: "choice", icon: "coffee", kicker: "Tipo de café", question: "Qual café você quer calcular?" },
+      { id: "price", kind: "price", icon: "badge-dollar-sign", kicker: "Preço da saca", question: "Qual preço da saca você quer usar?" },
+      { id: "bags", kind: "number", icon: "package-check", kicker: "Produção", question: "Quantas sacas de 60 kg você colheu?", unit: "sacas", min: 0.01, step: 1, quick: [10, 50, 100, 500] },
+      { id: "hectares", kind: "number", icon: "map", kicker: "Área", question: "Quantos hectares de café entraram nessa conta?", unit: "hectares", min: 0.01, step: 0.5, quick: [1, 2, 5, 10] },
+      ...costFields.map((field) => ({
+        id: field.id,
+        kind: "number",
+        icon: field.icon,
+        kicker: "Custos",
+        question: field.question,
+        unit: "reais",
+        min: 0,
+        step: 100,
+        quick: field.quick
+      }))
+    ];
+
+    const answers = {
+      coffeeType: "arabica",
+      price: 0,
+      bags: "",
+      hectares: "",
+      labor: 0,
+      fertilizer: 0,
+      defensive: 0,
+      harvest: 0,
+      machine: 0,
+      drying: 0,
+      transport: 0,
+      other: 0
+    };
+
+    let currentStep = 0;
+    let latestSpeech = "";
+    let market = normalizeMarket(fallbackMarketRows, false);
+    let currentView = "wizard";
+    const accountState = {
+      user: null,
+      token: "",
+      records: [],
+      mode: "none",
+      activeTab: "record",
+      lastError: ""
+    };
+
+    const wizard = document.getElementById("wizard");
+    const results = document.getElementById("results");
+    const accountGate = document.getElementById("accountGate");
+    const producerHub = document.getElementById("producerHub");
+    const hubContent = document.getElementById("hubContent");
+    const authMini = document.getElementById("authMini");
+    const openHubBtn = document.getElementById("openHubBtn");
+    const demoLoginBtn = document.getElementById("demoLoginBtn");
+    const googleSignInBox = document.getElementById("googleSignInBox");
+    const userChip = document.getElementById("userChip");
+    const hubSubtitle = document.getElementById("hubSubtitle");
+    const answerArea = document.getElementById("answerArea");
+    const questionText = document.getElementById("questionText");
+    const questionKicker = document.getElementById("questionKicker");
+    const questionIcon = document.getElementById("questionIcon");
+    const stepCounter = document.getElementById("stepCounter");
+    const stepHint = document.getElementById("stepHint");
+    const progressFill = document.getElementById("progressFill");
+    const errorText = document.getElementById("errorText");
+    const backBtn = document.getElementById("backBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const speakBtn = document.getElementById("speakBtn");
+    const repeatAudio = document.getElementById("repeatAudio");
+
+    function money(value, compact = false) {
+      const options = compact && Math.abs(value) >= 100000
+        ? { style: "currency", currency: "BRL", notation: "compact", maximumFractionDigits: 1 }
+        : { style: "currency", currency: "BRL", maximumFractionDigits: 0 };
+      return new Intl.NumberFormat("pt-BR", options).format(Number.isFinite(value) ? value : 0);
+    }
+
+    function moneyCents(value) {
+      return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 2 }).format(Number.isFinite(value) ? value : 0);
+    }
+
+    function numberBR(value, digits = 1) {
+      return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: digits }).format(Number.isFinite(value) ? value : 0);
+    }
+
+    function parseDateBR(value) {
+      if (!value) return new Date(0);
+      if (value.includes("/")) {
+        const [day, month, year] = value.split("/").map(Number);
+        return new Date(year, month - 1, day);
+      }
+      return new Date(value);
+    }
+
+    function normalizeType(type) {
+      return type === "conillon" || type === "robusta" ? "conillon" : "arabica";
+    }
+
+    function normalizeMarket(rows, live) {
+      const filtered = rows
+        .filter((row) => row && row.produto === "cafe" && Number(row.valor) > 0)
+        .map((row) => ({
+          dateLabel: row.referente_a || String(row.coletado_em || "").slice(0, 10),
+          collectedAt: row.coletado_em || "",
+          type: normalizeType(row.tipo),
+          value: Number(row.valor)
+        }));
+
+      const latestByType = {};
+      filtered.forEach((row) => {
+        const current = latestByType[row.type];
+        if (!current || new Date(row.collectedAt) > new Date(current.collectedAt)) {
+          latestByType[row.type] = row;
+        }
+      });
+
+      const grouped = new Map();
+      filtered.forEach((row) => {
+        const key = row.dateLabel;
+        if (!grouped.has(key)) grouped.set(key, { dateLabel: key, arabica: null, conillon: null, collectedAt: row.collectedAt });
+        const item = grouped.get(key);
+        item[row.type] = row.value;
+        if (new Date(row.collectedAt) > new Date(item.collectedAt)) item.collectedAt = row.collectedAt;
+      });
+
+      const history = Array.from(grouped.values())
+        .filter((item) => item.arabica || item.conillon)
+        .sort((a, b) => parseDateBR(a.dateLabel) - parseDateBR(b.dateLabel));
+
+      return {
+        live,
+        updatedAt: latestByType.arabica?.collectedAt || latestByType.conillon?.collectedAt || "",
+        prices: {
+          arabica: latestByType.arabica?.value || 1716.30,
+          conillon: latestByType.conillon?.value || 943.54
+        },
+        history
+      };
+    }
+
+    function coffeeType() {
+      return coffeeTypes.find((item) => item.id === answers.coffeeType) || coffeeTypes[0];
+    }
+
+    function marketPriceFor(type = coffeeType()) {
+      return Math.round((market.prices[type.base] || 0) * type.factor * 100) / 100;
+    }
+
+    function refreshLucide() {
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function speak(text) {
+      latestSpeech = text;
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "pt-BR";
+      utterance.rate = 0.88;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function showView(view) {
+      currentView = view;
+      wizard.classList.toggle("hidden", view !== "wizard");
+      results.classList.toggle("show", view === "results");
+      accountGate.classList.toggle("hidden", view !== "login");
+      producerHub.classList.toggle("hidden", view !== "hub");
+
+      if (view === "wizard") {
+        results.classList.remove("show");
+        renderStep(false);
+      }
+
+      if (view === "hub") {
+        renderHub();
+      }
+
+      refreshLucide();
+    }
+
+    function isGoogleConfigured() {
+      return GOOGLE_CLIENT_ID.includes(".apps.googleusercontent.com") && !GOOGLE_CLIENT_ID.startsWith("COLE_AQUI");
+    }
+
+    function decodeJwtPayload(token) {
+      try {
+        const payload = token.split(".")[1];
+        const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+        const json = decodeURIComponent(atob(normalized).split("").map((char) => {
+          return `%${(`00${char.charCodeAt(0).toString(16)}`).slice(-2)}`;
+        }).join(""));
+        return JSON.parse(json);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function initAuth() {
+      updateAuthUi();
+
+      if (!isGoogleConfigured()) {
+        googleSignInBox.innerHTML = `<p class="mini-text">Google Client ID ainda não configurado. Use o modo teste ou configure o OAuth antes de publicar.</p>`;
+        return;
+      }
+
+      const waitForGoogle = setInterval(() => {
+        if (!window.google?.accounts?.id) return;
+        clearInterval(waitForGoogle);
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+        window.google.accounts.id.renderButton(googleSignInBox, {
+          theme: "outline",
+          size: "large",
+          text: "signin_with",
+          shape: "rectangular"
+        });
+      }, 250);
+    }
+
+    async function handleCredentialResponse(response) {
+      const payload = decodeJwtPayload(response.credential);
+      if (!payload?.email) {
+        accountState.lastError = "Não foi possível confirmar o e-mail do Google.";
+        updateAuthUi();
+        return;
+      }
+
+      accountState.user = {
+        name: payload.name || payload.email,
+        email: payload.email,
+        picture: payload.picture || "",
+        sub: payload.sub || payload.email
+      };
+      accountState.token = response.credential;
+      accountState.mode = "google";
+      await loadProducerRecords();
+      updateAuthUi();
+      showView("hub");
+    }
+
+    async function demoLogin() {
+      accountState.user = {
+        name: "Produtor em teste",
+        email: "teste-local@cafecalc",
+        picture: "",
+        sub: "demo-local"
+      };
+      accountState.token = "";
+      accountState.mode = "demo";
+      await loadProducerRecords();
+      updateAuthUi();
+      showView("hub");
+    }
+
+    function logout() {
+      accountState.user = null;
+      accountState.token = "";
+      accountState.records = [];
+      accountState.mode = "none";
+      updateAuthUi();
+      showView("login");
+    }
+
+    function updateAuthUi() {
+      const mode = accountState.mode;
+      const user = accountState.user;
+
+      authMini.className = `security-status ${mode === "google" ? "" : mode === "demo" ? "warn" : "bad"}`;
+      authMini.innerHTML = mode === "google"
+        ? `<i data-lucide="shield-check"></i><div><p class="mini-title">Conta protegida</p><p class="mini-text">${user.email}</p></div>`
+        : mode === "demo"
+          ? `<i data-lucide="monitor-check"></i><div><p class="mini-title">Modo teste local</p><p class="mini-text">Dados só neste navegador.</p></div>`
+          : `<i data-lucide="lock-keyhole"></i><div><p class="mini-title">Sem login</p><p class="mini-text">Entre para salvar dados.</p></div>`;
+
+      if (user) {
+        userChip.innerHTML = user.picture
+          ? `<img src="${user.picture}" alt=""><span>${user.name}</span>`
+          : `<i data-lucide="user-round-check"></i><span>${user.name}</span>`;
+        hubSubtitle.textContent = mode === "google"
+          ? "Dados carregados pelo Apps Script. A planilha só deve ser acessada pelo backend."
+          : "Modo demonstração: salvos apenas no navegador deste computador.";
+      }
+
+      refreshLucide();
+    }
+
+    function localStorageKey() {
+      const id = accountState.user?.sub || "anonymous";
+      return `cafecalc.records.${id}`;
+    }
+
+    async function backendCall(action, payload = {}) {
+      if (accountState.mode !== "google") {
+        throw new Error("Sem login Google");
+      }
+
+      if (window.google?.script?.run) {
+        return new Promise((resolve, reject) => {
+          window.google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .cafeCalcApi({ action, token: accountState.token, payload });
+        });
+      }
+
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action, token: accountState.token, payload })
+      });
+
+      if (!response.ok) throw new Error("Backend indisponível");
+      const data = await response.json();
+      if (!data.ok) throw new Error(data.error || "Erro no backend");
+      return data;
+    }
+
+    async function loadProducerRecords() {
+      if (!accountState.user) return;
+
+      try {
+        const data = await backendCall("listRecords");
+        accountState.records = normalizeStoredRecords(data.records || []);
+        accountState.mode = "google";
+      } catch (error) {
+        const local = JSON.parse(localStorage.getItem(localStorageKey()) || "[]");
+        accountState.records = normalizeStoredRecords(local);
+        if (accountState.mode === "google") {
+          accountState.mode = "demo";
+          accountState.lastError = "Backend ainda não aceitou os novos métodos. Usando modo teste local.";
+        }
+      }
+    }
+
+    function normalizeStoredRecords(records) {
+      return records
+        .map((record) => ({
+          id: record.id || crypto.randomUUID?.() || String(Date.now() + Math.random()),
+          date: record.date || new Date().toISOString().slice(0, 10),
+          plot: record.plot || "Fazenda",
+          coffeeType: record.coffeeType || "arabica",
+          bags: Number(record.bags || 0),
+          hectares: Number(record.hectares || 0),
+          price: Number(record.price || 0),
+          costs: {
+            labor: Number(record.costs?.labor || record.labor || 0),
+            fertilizer: Number(record.costs?.fertilizer || record.fertilizer || 0),
+            defensive: Number(record.costs?.defensive || record.defensive || 0),
+            harvest: Number(record.costs?.harvest || record.harvest || 0),
+            machine: Number(record.costs?.machine || record.machine || 0),
+            drying: Number(record.costs?.drying || record.drying || 0),
+            transport: Number(record.costs?.transport || record.transport || 0),
+            other: Number(record.costs?.other || record.other || 0)
+          },
+          notes: record.notes || "",
+          createdAt: record.createdAt || new Date().toISOString()
+        }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    async function persistRecords() {
+      localStorage.setItem(localStorageKey(), JSON.stringify(accountState.records));
+    }
+
+    async function saveProducerRecord(record) {
+      const clean = normalizeStoredRecords([record])[0];
+      const existingIndex = accountState.records.findIndex((item) => item.id === clean.id);
+      if (existingIndex >= 0) {
+        accountState.records[existingIndex] = clean;
+      } else {
+        accountState.records.unshift(clean);
+      }
+      accountState.records = normalizeStoredRecords(accountState.records);
+
+      if (accountState.mode === "google") {
+        try {
+          await backendCall("saveRecord", clean);
+        } catch (error) {
+          accountState.mode = "demo";
+          accountState.lastError = "Não consegui gravar online. Mantive uma cópia local para não perder o lançamento.";
+        }
+      }
+
+      await persistRecords();
+      updateAuthUi();
+      renderHub();
+    }
+
+    async function deleteProducerRecord(id) {
+      accountState.records = accountState.records.filter((record) => record.id !== id);
+      if (accountState.mode === "google") {
+        try {
+          await backendCall("deleteRecord", { id });
+        } catch (error) {
+          accountState.mode = "demo";
+          accountState.lastError = "Não consegui apagar online. Removi apenas a cópia local.";
+        }
+      }
+      await persistRecords();
+      updateAuthUi();
+      renderHub();
+    }
+
+    function stepSpeakText(step = steps[currentStep]) {
+      if (step.kind === "price") {
+        return `${step.question} O preço de mercado estimado é ${moneyCents(marketPriceFor())} por saca.`;
+      }
+      return step.question;
+    }
+
+    function updateMarketUi() {
+      document.getElementById("arabicaPrice").textContent = moneyCents(market.prices.arabica);
+      document.getElementById("conillonPrice").textContent = moneyCents(market.prices.conillon);
+
+      const sourceState = document.getElementById("sourceState");
+      sourceState.classList.toggle("warn", !market.live);
+      sourceState.innerHTML = `<i data-lucide="${market.live ? "cloud-check" : "cloud-off"}"></i>${market.live ? "online" : "base local"}`;
+
+      const dateText = market.updatedAt
+        ? new Date(market.updatedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+        : "sem data";
+      document.getElementById("marketNote").textContent = `Atualizado em ${dateText}. Valores por saca; ajuste se o comprador pagar diferente.`;
+
+      if (!answers.price) answers.price = marketPriceFor();
+      if (steps[currentStep]?.kind === "price" || steps[currentStep]?.kind === "choice") renderStep(false);
+      refreshLucide();
+    }
+
+    async function loadMarket() {
+      try {
+        const response = await fetch(`${MARKET_URL}?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error("Falha ao baixar preços");
+        const rows = await response.json();
+        if (!Array.isArray(rows)) throw new Error("Formato inválido");
+        market = normalizeMarket(rows, true);
+      } catch (error) {
+        market = normalizeMarket(fallbackMarketRows, false);
+      }
+      answers.price = marketPriceFor();
+      updateMarketUi();
+    }
+
+    function renderStep(shouldSpeak = false) {
+      const step = steps[currentStep];
+      errorText.classList.remove("show");
+      questionText.textContent = step.question;
+      questionKicker.textContent = step.kicker;
+      questionIcon.innerHTML = `<i data-lucide="${step.icon}"></i>`;
+      stepCounter.textContent = `Pergunta ${currentStep + 1} de ${steps.length}`;
+      stepHint.textContent = coffeeType().short;
+      progressFill.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
+      backBtn.disabled = currentStep === 0;
+      backBtn.style.visibility = currentStep === 0 ? "hidden" : "visible";
+      nextBtn.innerHTML = currentStep === steps.length - 1
+        ? `Ver resultado <i data-lucide="chart-no-axes-combined"></i>`
+        : `Avançar <i data-lucide="arrow-right"></i>`;
+
+      if (step.kind === "choice") renderChoiceStep();
+      if (step.kind === "price") renderPriceStep();
+      if (step.kind === "number") renderNumberStep(step);
+
+      latestSpeech = stepSpeakText(step);
+      if (shouldSpeak) speak(latestSpeech);
+      refreshLucide();
+    }
+
+    function renderChoiceStep() {
+      answerArea.innerHTML = `
+        <div class="choice-grid">
+          ${coffeeTypes.map((type) => `
+            <button class="choice-card ${answers.coffeeType === type.id ? "active" : ""}" type="button" data-choice="${type.id}" aria-label="${type.label}">
+              <i data-lucide="${type.icon}"></i>
+              <p class="choice-name">${type.label}</p>
+              <p class="choice-desc">${type.text}</p>
+              <p class="choice-price">${moneyCents(marketPriceFor(type))}/saca</p>
+            </button>
+          `).join("")}
+        </div>
+      `;
+
+      answerArea.querySelectorAll("[data-choice]").forEach((button) => {
+        button.addEventListener("click", () => {
+          answers.coffeeType = button.dataset.choice;
+          answers.price = marketPriceFor();
+          renderStep(false);
+        });
+      });
+    }
+
+    function renderPriceStep() {
+      const suggested = marketPriceFor();
+      if (!answers.price) answers.price = suggested;
+      answerArea.innerHTML = `
+        <div class="price-source-box">
+          <div class="price-source-top">
+            <i data-lucide="badge-dollar-sign"></i>
+            <div>
+              <p class="source-price">${moneyCents(suggested)}</p>
+              <p class="source-caption">Preço estimado para ${coffeeType().label}. Pode trocar pelo valor da cooperativa, corretor ou comprador.</p>
+            </div>
+          </div>
+          ${numberInputMarkup("price", answers.price, "reais", 10)}
+          <div class="unit-row">
+            <button class="quick-btn" type="button" data-set-price="${suggested}">Usar mercado</button>
+            <button class="quick-btn" type="button" data-bump="-50">- R$ 50</button>
+            <button class="quick-btn" type="button" data-bump="50">+ R$ 50</button>
+          </div>
+        </div>
+      `;
+      wireNumberInput("price", 10);
+      answerArea.querySelector("[data-set-price]").addEventListener("click", (event) => {
+        answers.price = Number(event.currentTarget.dataset.setPrice);
+        renderPriceStep();
+        refreshLucide();
+      });
+      answerArea.querySelectorAll("[data-bump]").forEach((button) => {
+        button.addEventListener("click", () => {
+          answers.price = Math.max(0, Number(answers.price || 0) + Number(button.dataset.bump));
+          renderPriceStep();
+          refreshLucide();
+        });
+      });
+    }
+
+    function renderNumberStep(step) {
+      answerArea.innerHTML = `
+        <div class="number-area">
+          ${numberInputMarkup(step.id, answers[step.id], step.unit, step.step)}
+          <div class="unit-row">
+            <span class="unit-badge">${step.unit}</span>
+            ${step.quick.map((value) => `<button class="quick-btn" type="button" data-quick="${value}">${formatQuick(value, step.unit)}</button>`).join("")}
+          </div>
+        </div>
+      `;
+      wireNumberInput(step.id, step.step);
+      answerArea.querySelectorAll("[data-quick]").forEach((button) => {
+        button.addEventListener("click", () => {
+          answers[step.id] = Number(button.dataset.quick);
+          renderNumberStep(step);
+          refreshLucide();
+        });
+      });
+    }
+
+    function numberInputMarkup(id, value, unit, step) {
+      return `
+        <div class="input-shell">
+          <button class="step-btn" type="button" data-minus="${id}" aria-label="Diminuir">
+            <i data-lucide="minus"></i>
+          </button>
+          <input class="answer-input" id="input-${id}" inputmode="decimal" type="number" min="0" step="${step}" value="${value ?? ""}" aria-label="${unit}">
+          <button class="step-btn" type="button" data-plus="${id}" aria-label="Aumentar">
+            <i data-lucide="plus"></i>
+          </button>
+        </div>
+      `;
+    }
+
+    function wireNumberInput(id, step) {
+      const input = document.getElementById(`input-${id}`);
+      input.addEventListener("input", () => {
+        answers[id] = input.value === "" ? "" : Number(input.value);
+      });
+      answerArea.querySelector(`[data-minus="${id}"]`).addEventListener("click", () => {
+        answers[id] = Math.max(0, Number(answers[id] || 0) - step);
+        input.value = answers[id];
+      });
+      answerArea.querySelector(`[data-plus="${id}"]`).addEventListener("click", () => {
+        answers[id] = Number(answers[id] || 0) + step;
+        input.value = answers[id];
+      });
+      setTimeout(() => input.focus({ preventScroll: true }), 60);
+    }
+
+    function formatQuick(value, unit) {
+      if (unit === "reais") return money(value);
+      return numberBR(value, unit === "hectares" ? 1 : 0);
+    }
+
+    function validateStep() {
+      const step = steps[currentStep];
+      if (step.kind === "choice") return true;
+
+      const value = Number(answers[step.id]);
+      if (!Number.isFinite(value) || value < step.min) {
+        errorText.textContent = step.min > 0 ? "Informe um número maior que zero." : "Informe zero ou um valor maior.";
+        errorText.classList.add("show");
+        speak(errorText.textContent);
+        return false;
+      }
+      return true;
+    }
+
+    function nextStep() {
+      if (!validateStep()) return;
+      if (currentStep < steps.length - 1) {
+        currentStep += 1;
+        renderStep(true);
+        return;
+      }
+      showResults();
+    }
+
+    function previousStep() {
+      if (currentStep === 0) return;
+      currentStep -= 1;
+      renderStep(false);
+    }
+
+    function renderHub() {
+      if (!accountState.user) {
+        showView("login");
+        return;
+      }
+
+      document.querySelectorAll("[data-hub-tab]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.hubTab === accountState.activeTab);
+      });
+
+      if (accountState.activeTab === "record") renderRecordForm();
+      if (accountState.activeTab === "analysis") renderProducerAnalysis();
+      if (accountState.activeTab === "history") renderProducerHistory();
+      refreshLucide();
+    }
+
+    function renderRecordForm(seed = {}) {
+      const defaults = {
+        id: seed.id || "",
+        date: seed.date || new Date().toISOString().slice(0, 10),
+        plot: seed.plot || "",
+        coffeeType: seed.coffeeType || answers.coffeeType || "arabica",
+        bags: seed.bags ?? "",
+        hectares: seed.hectares ?? "",
+        price: seed.price ?? marketPriceFor(coffeeTypes.find((type) => type.id === (seed.coffeeType || answers.coffeeType)) || coffeeType()),
+        notes: seed.notes || "",
+        costs: seed.costs || {}
+      };
+
+      hubContent.innerHTML = `
+        <form class="record-form" id="recordForm">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Lançamento</p>
+              <h2 class="choice-name">Registrar produção e gastos</h2>
+            </div>
+            <span class="source-state ${accountState.mode === "google" ? "" : "warn"}">
+              <i data-lucide="${accountState.mode === "google" ? "cloud-check" : "hard-drive"}"></i>
+              ${accountState.mode === "google" ? "online" : "local"}
+            </span>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="recordDate">Data</label>
+              <input id="recordDate" name="date" type="date" value="${defaults.date}" required>
+            </div>
+            <div class="field">
+              <label for="recordPlot">Talhão ou fazenda</label>
+              <input id="recordPlot" name="plot" type="text" value="${escapeAttr(defaults.plot)}" placeholder="Ex.: Talhão 2">
+            </div>
+            <div class="field">
+              <label for="recordType">Tipo de café</label>
+              <select id="recordType" name="coffeeType">
+                ${coffeeTypes.map((type) => `<option value="${type.id}" ${defaults.coffeeType === type.id ? "selected" : ""}>${type.label}</option>`).join("")}
+              </select>
+            </div>
+            <div class="field">
+              <label for="recordBags">Sacas colhidas</label>
+              <input id="recordBags" name="bags" inputmode="decimal" type="number" min="0" step="0.01" value="${defaults.bags}" required>
+            </div>
+            <div class="field">
+              <label for="recordHectares">Hectares</label>
+              <input id="recordHectares" name="hectares" inputmode="decimal" type="number" min="0" step="0.01" value="${defaults.hectares}" required>
+            </div>
+            <div class="field">
+              <label for="recordPrice">Preço da saca</label>
+              <input id="recordPrice" name="price" inputmode="decimal" type="number" min="0" step="0.01" value="${defaults.price}" required>
+            </div>
+          </div>
+
+          <div>
+            <p class="eyebrow">Gastos</p>
+            <div class="cost-form-grid">
+              ${costFields.map((field) => `
+                <div class="field">
+                  <label for="cost-${field.id}">${field.label}</label>
+                  <input id="cost-${field.id}" name="${field.id}" inputmode="decimal" type="number" min="0" step="0.01" value="${defaults.costs[field.id] ?? 0}">
+                </div>
+              `).join("")}
+            </div>
+          </div>
+
+          <div class="field full">
+            <label for="recordNotes">Observações</label>
+            <textarea id="recordNotes" name="notes" placeholder="Ex.: chuva na colheita, talhão com broca, venda parcial...">${escapeHtml(defaults.notes)}</textarea>
+          </div>
+
+          <input type="hidden" name="id" value="${defaults.id}">
+          <p class="save-state ${accountState.lastError ? "bad" : ""}" id="saveState">${accountState.lastError || "Pronto para salvar."}</p>
+          <div class="nav-row">
+            <button class="ghost" type="button" id="backToIntro">
+              <i data-lucide="list-checks"></i>
+              Voltar para perguntas
+            </button>
+            <button class="primary" type="submit">
+              <i data-lucide="save"></i>
+              Salvar lançamento
+            </button>
+          </div>
+        </form>
+      `;
+
+      const typeSelect = document.getElementById("recordType");
+      typeSelect.addEventListener("change", () => {
+        const type = coffeeTypes.find((item) => item.id === typeSelect.value) || coffeeTypes[0];
+        document.getElementById("recordPrice").value = marketPriceFor(type);
+      });
+
+      document.getElementById("backToIntro").addEventListener("click", () => showView("wizard"));
+      document.getElementById("recordForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const record = recordFromForm(form);
+        document.getElementById("saveState").textContent = "Salvando...";
+        await saveProducerRecord(record);
+        accountState.lastError = "";
+        accountState.activeTab = "analysis";
+        renderHub();
+        speak("Lançamento salvo. A análise da fazenda foi atualizada.");
+      });
+    }
+
+    function recordFromForm(form) {
+      const costs = {};
+      costFields.forEach((field) => {
+        costs[field.id] = Number(form.get(field.id) || 0);
+      });
+      return {
+        id: form.get("id") || crypto.randomUUID?.() || String(Date.now()),
+        date: form.get("date"),
+        plot: String(form.get("plot") || "Fazenda"),
+        coffeeType: form.get("coffeeType"),
+        bags: Number(form.get("bags") || 0),
+        hectares: Number(form.get("hectares") || 0),
+        price: Number(form.get("price") || 0),
+        costs,
+        notes: String(form.get("notes") || ""),
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    function recordFromIntro() {
+      const costs = {};
+      costFields.forEach((field) => {
+        costs[field.id] = Number(answers[field.id] || 0);
+      });
+      return {
+        date: new Date().toISOString().slice(0, 10),
+        plot: "Conta inicial",
+        coffeeType: answers.coffeeType,
+        bags: Number(answers.bags || 0),
+        hectares: Number(answers.hectares || 0),
+        price: Number(answers.price || 0),
+        costs,
+        notes: "Criado pela sequência de perguntas iniciais.",
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    function renderProducerAnalysis() {
+      if (!accountState.records.length) {
+        hubContent.innerHTML = emptyHub("Ainda não há dados salvos.", "Faça o primeiro lançamento para ver gráficos da fazenda.");
+        wireEmptyHub();
+        return;
+      }
+
+      const summary = aggregateRecords(accountState.records);
+      hubContent.innerHTML = `
+        <div class="analysis-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Análise acumulada</p>
+              <h2 class="choice-name">${accountState.records.length} lançamento(s) salvos</h2>
+            </div>
+            <button class="secondary" type="button" id="newRecordFromAnalysis">
+              <i data-lucide="plus"></i>
+              Novo
+            </button>
+          </div>
+
+          <div class="analysis-grid">
+            ${metricMarkup("package-check", "Sacas registradas", numberBR(summary.bags, 1), `${numberBR(summary.hectares, 1)} hectares somados`)}
+            ${metricMarkup("circle-dollar-sign", "Lucro acumulado", money(summary.profit), `${numberBR(summary.margin * 100, 1)}% de margem`)}
+            ${metricMarkup("scale", "Custo médio/saca", moneyCents(summary.costPerBag), `Preço médio ${moneyCents(summary.price)}`)}
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-box">
+              <div class="chart-title">
+                <h2>Resultado por mês</h2>
+                <span>lucro ou prejuízo</span>
+              </div>
+              ${monthlyChart(accountState.records)}
+            </div>
+            <div class="chart-box">
+              <div class="chart-title">
+                <h2>Gastos acumulados</h2>
+                <span>maior peso primeiro</span>
+              </div>
+              ${costBars(summary)}
+            </div>
+            <div class="chart-box wide">
+              <div class="chart-title">
+                <h2>Leitura da fazenda</h2>
+                <span>texto gerado pelos dados</span>
+              </div>
+              <ul class="insight-list">
+                ${producerInsights(summary).map((item) => `<li><i data-lucide="${item.icon}"></i><span>${item.text}</span></li>`).join("")}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("newRecordFromAnalysis").addEventListener("click", () => {
+        accountState.activeTab = "record";
+        renderHub();
+      });
+    }
+
+    function renderProducerHistory() {
+      if (!accountState.records.length) {
+        hubContent.innerHTML = emptyHub("Histórico vazio.", "Os lançamentos salvos aparecerão aqui.");
+        wireEmptyHub();
+        return;
+      }
+
+      hubContent.innerHTML = `
+        <div class="history-panel">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Histórico</p>
+              <h2 class="choice-name">Lançamentos da fazenda</h2>
+            </div>
+            <button class="secondary" type="button" id="refreshRecords">
+              <i data-lucide="refresh-cw"></i>
+              Atualizar
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Talhão</th>
+                  <th>Café</th>
+                  <th>Sacas</th>
+                  <th>Receita</th>
+                  <th>Custo</th>
+                  <th>Resultado</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${accountState.records.map((record) => {
+                  const calc = calcFromRecord(record);
+                  return `
+                    <tr>
+                      <td>${formatDate(record.date)}</td>
+                      <td>${escapeHtml(record.plot)}</td>
+                      <td>${coffeeName(record.coffeeType)}</td>
+                      <td>${numberBR(record.bags, 1)}</td>
+                      <td>${money(calc.revenue)}</td>
+                      <td>${money(calc.totalCosts)}</td>
+                      <td>${money(calc.profit)}</td>
+                      <td>
+                        <button class="ghost" type="button" data-delete-record="${record.id}" aria-label="Apagar lançamento">
+                          <i data-lucide="trash-2"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join("")}
+              </tbody>
+            </table>
+          </div>
+          <div class="danger-zone">
+            <span>Dados sensíveis: mantenha a planilha privada e o Apps Script publicado com verificação de token.</span>
+            <button class="secondary" type="button" id="logoutBtn">
+              <i data-lucide="log-out"></i>
+              Sair
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("refreshRecords").addEventListener("click", async () => {
+        await loadProducerRecords();
+        renderHub();
+      });
+      document.getElementById("logoutBtn").addEventListener("click", logout);
+      document.querySelectorAll("[data-delete-record]").forEach((button) => {
+        button.addEventListener("click", async () => {
+          await deleteProducerRecord(button.dataset.deleteRecord);
+        });
+      });
+    }
+
+    function emptyHub(title, text) {
+      return `
+        <div class="empty-state">
+          <div>
+            <i data-lucide="clipboard-list"></i>
+            <h2>${title}</h2>
+            <p>${text}</p>
+            <button class="primary" type="button" data-empty-record>
+              <i data-lucide="plus"></i>
+              Fazer lançamento
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function wireEmptyHub() {
+      hubContent.querySelector("[data-empty-record]")?.addEventListener("click", () => {
+        accountState.activeTab = "record";
+        renderHub();
+      });
+    }
+
+    function aggregateRecords(records) {
+      const costs = costFields.map((field) => ({
+        ...field,
+        value: records.reduce((sum, record) => sum + Number(record.costs?.[field.id] || 0), 0)
+      }));
+      const totalCosts = costs.reduce((sum, item) => sum + item.value, 0);
+      const bags = records.reduce((sum, record) => sum + Number(record.bags || 0), 0);
+      const hectares = records.reduce((sum, record) => sum + Number(record.hectares || 0), 0);
+      const revenue = records.reduce((sum, record) => sum + calcFromRecord(record).revenue, 0);
+      const profit = revenue - totalCosts;
+      const price = bags > 0 ? revenue / bags : 0;
+      const type = coffeeTypes.find((item) => item.id === records[0]?.coffeeType) || coffeeTypes[0];
+      const biggestCost = costs.reduce((max, item) => item.value > max.value ? item : max, costs[0]);
+
+      return {
+        type,
+        costs,
+        totalCosts,
+        bags,
+        hectares,
+        price,
+        revenue,
+        profit,
+        costPerBag: bags > 0 ? totalCosts / bags : 0,
+        profitPerBag: bags > 0 ? profit / bags : 0,
+        productivity: hectares > 0 ? bags / hectares : 0,
+        margin: revenue > 0 ? profit / revenue : 0,
+        revenuePerHa: hectares > 0 ? revenue / hectares : 0,
+        costPerHa: hectares > 0 ? totalCosts / hectares : 0,
+        biggestCost
+      };
+    }
+
+    function calcFromRecord(record) {
+      const totalCosts = costFields.reduce((sum, field) => sum + Number(record.costs?.[field.id] || 0), 0);
+      const revenue = Number(record.bags || 0) * Number(record.price || 0);
+      return {
+        totalCosts,
+        revenue,
+        profit: revenue - totalCosts,
+        costPerBag: Number(record.bags || 0) > 0 ? totalCosts / Number(record.bags) : 0
+      };
+    }
+
+    function producerInsights(summary) {
+      const insights = [];
+      const biggestShare = summary.totalCosts > 0 ? summary.biggestCost.value / summary.totalCosts : 0;
+      insights.push({
+        icon: summary.profit >= 0 ? "badge-check" : "triangle-alert",
+        text: summary.profit >= 0
+          ? `A fazenda está positiva no acumulado: sobrou ${money(summary.profit)} depois dos custos informados.`
+          : `O acumulado está negativo: faltou ${money(Math.abs(summary.profit))}. O preço médio de equilíbrio é ${moneyCents(summary.costPerBag)} por saca.`
+      });
+      insights.push({
+        icon: "scale",
+        text: `Cada saca custou em média ${moneyCents(summary.costPerBag)} e foi vendida/calculada por ${moneyCents(summary.price)}.`
+      });
+      insights.push({
+        icon: "map",
+        text: `A produtividade média registrada é ${numberBR(summary.productivity, 1)} sc/ha. Use esse número por talhão para descobrir onde a lavoura responde melhor.`
+      });
+      if (summary.totalCosts > 0) {
+        insights.push({
+          icon: "receipt-text",
+          text: `O maior gasto acumulado é ${summary.biggestCost.label}, com ${numberBR(biggestShare * 100, 1)}% dos custos. Esse é o primeiro ponto para conferir notas e negociar compra.`
+        });
+      }
+      insights.push({
+        icon: "cloud-sun",
+        text: `A estimativa não substitui assistência técnica: clima, bebida, peneira, frete, pragas e qualidade mudam o resultado real.`
+      });
+      return insights;
+    }
+
+    function monthlyChart(records) {
+      const grouped = new Map();
+      records.forEach((record) => {
+        const key = String(record.date || "").slice(0, 7);
+        const current = grouped.get(key) || { label: key, value: 0 };
+        current.value += calcFromRecord(record).profit;
+        grouped.set(key, current);
+      });
+      const rows = Array.from(grouped.values())
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .slice(-8)
+        .map((item) => ({
+          label: formatMonth(item.label),
+          value: Math.abs(item.value),
+          raw: item.value,
+          color: item.value >= 0 ? "var(--good)" : "var(--bad)"
+        }));
+      const max = Math.max(...rows.map((item) => item.value), 1);
+      return `
+        <div class="bar-list">
+          ${rows.map((row) => `
+            <div class="bar-row">
+              <div class="bar-label">${row.label}</div>
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.max(3, (row.value / max) * 100)}%; background:${row.color};"></div></div>
+              <div class="bar-value">${money(row.raw)}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function coffeeName(id) {
+      return coffeeTypes.find((type) => type.id === id)?.short || "Café";
+    }
+
+    function formatDate(value) {
+      if (!value) return "--";
+      return new Date(`${value}T12:00:00`).toLocaleDateString("pt-BR");
+    }
+
+    function formatMonth(value) {
+      const [year, month] = value.split("-");
+      return `${month}/${year}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replace(/`/g, "&#096;");
+    }
+
+    function calculations() {
+      const costs = costFields.map((field) => ({
+        ...field,
+        value: Number(answers[field.id] || 0)
+      }));
+      const totalCosts = costs.reduce((sum, item) => sum + item.value, 0);
+      const bags = Number(answers.bags || 0);
+      const hectares = Number(answers.hectares || 0);
+      const price = Number(answers.price || 0);
+      const revenue = bags * price;
+      const profit = revenue - totalCosts;
+      const costPerBag = bags > 0 ? totalCosts / bags : 0;
+      const profitPerBag = bags > 0 ? profit / bags : 0;
+      const productivity = hectares > 0 ? bags / hectares : 0;
+      const margin = revenue > 0 ? profit / revenue : 0;
+      const revenuePerHa = hectares > 0 ? revenue / hectares : 0;
+      const costPerHa = hectares > 0 ? totalCosts / hectares : 0;
+      const biggestCost = costs.reduce((max, item) => item.value > max.value ? item : max, costs[0]);
+      return {
+        type: coffeeType(),
+        costs,
+        totalCosts,
+        bags,
+        hectares,
+        price,
+        revenue,
+        profit,
+        costPerBag,
+        profitPerBag,
+        productivity,
+        margin,
+        revenuePerHa,
+        costPerHa,
+        biggestCost
+      };
+    }
+
+    function resultTone(calc) {
+      if (calc.profit < 0) return { className: "bad", title: "A conta deu prejuízo", icon: "triangle-alert" };
+      if (calc.margin < 0.1) return { className: "warn", title: "A conta ficou apertada", icon: "circle-alert" };
+      if (calc.margin < 0.25) return { className: "", title: "A lavoura pagou e sobrou", icon: "badge-check" };
+      return { className: "", title: "A lavoura está bem na conta", icon: "badge-check" };
+    }
+
+    function showResults() {
+      const calc = calculations();
+      const tone = resultTone(calc);
+      showView("results");
+      results.innerHTML = `
+        <div class="result-hero ${tone.className}">
+          <div>
+            <h1>${tone.title}</h1>
+            <p>${shortResultText(calc)}</p>
+          </div>
+          <div class="hero-actions">
+            <button class="audio-btn" type="button" id="speakResult" aria-label="Ouvir resultado">
+              <i data-lucide="volume-2"></i>
+            </button>
+            <button class="audio-btn" type="button" id="printResult" aria-label="Imprimir">
+              <i data-lucide="printer"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          ${metricMarkup("circle-dollar-sign", "Lucro total", money(calc.profit), `${money(calc.profitPerBag)} por saca`)}
+          ${metricMarkup("scale", "Ponto de equilíbrio", moneyCents(calc.costPerBag), "preço mínimo por saca")}
+          ${metricMarkup("map", "Produtividade", `${numberBR(calc.productivity, 1)} sc/ha`, `${numberBR(calc.hectares, 1)} ha informados`)}
+          ${metricMarkup("percent", "Margem", `${numberBR(calc.margin * 100, 1)}%`, "lucro dividido pela receita")}
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-box">
+            <div class="chart-title">
+              <h2>Dinheiro da lavoura</h2>
+              <span>entrada, gasto e sobra</span>
+            </div>
+            ${moneyBars(calc)}
+          </div>
+
+          <div class="chart-box">
+            <div class="chart-title">
+              <h2>Custos por parte</h2>
+              <span>maior peso primeiro</span>
+            </div>
+            ${costBars(calc)}
+          </div>
+
+          <div class="chart-box">
+            <div class="chart-title">
+              <h2>Preço e risco</h2>
+              <span>se o mercado mudar</span>
+            </div>
+            ${sensitivityChart(calc)}
+          </div>
+
+          <div class="chart-box">
+            <div class="chart-title">
+              <h2>Produtividade</h2>
+              <span>comparação de gestão</span>
+            </div>
+            ${productivityChart(calc)}
+          </div>
+
+          <div class="chart-box wide">
+            <div class="chart-title">
+              <h2>Mercado recente</h2>
+              <span>arábica e conilon</span>
+            </div>
+            ${marketHistoryChart()}
+          </div>
+        </div>
+
+        <div class="diagnosis">
+          <h2>Leitura clara para o produtor</h2>
+          <p>${diagnosisText(calc)}</p>
+          <p>Fonte de preço: <a class="plain-link" href="${MARKET_URL}" target="_blank" rel="noopener">histórico público de cotações</a>. É uma referência, não substitui a nota da venda, a cooperativa ou orientação técnica.</p>
+        </div>
+
+        <div class="nav-row">
+          <button class="secondary" type="button" id="editAgain">
+            <i data-lucide="arrow-left"></i>
+            Corrigir respostas
+          </button>
+          <button class="secondary" type="button" id="saveIntroResult">
+            <i data-lucide="cloud-upload"></i>
+            Salvar na área do produtor
+          </button>
+          <button class="primary" type="button" id="restart">
+            <i data-lucide="rotate-ccw"></i>
+            Nova conta
+          </button>
+        </div>
+      `;
+
+      latestSpeech = `${tone.title}. ${shortResultText(calc)} ${diagnosisText(calc)}`;
+      document.getElementById("speakResult").addEventListener("click", () => speak(latestSpeech));
+      document.getElementById("printResult").addEventListener("click", () => window.print());
+      document.getElementById("editAgain").addEventListener("click", () => {
+        currentStep = 0;
+        showView("wizard");
+      });
+      document.getElementById("saveIntroResult").addEventListener("click", async () => {
+        if (!accountState.user) {
+          showView("login");
+          speak("Entre na conta para salvar os dados da fazenda.");
+          return;
+        }
+        await saveProducerRecord(recordFromIntro());
+        accountState.activeTab = "analysis";
+        showView("hub");
+      });
+      document.getElementById("restart").addEventListener("click", () => window.location.reload());
+      refreshLucide();
+      speak(latestSpeech);
+    }
+
+    function metricMarkup(icon, label, value, note) {
+      return `
+        <div class="metric">
+          <i data-lucide="${icon}"></i>
+          <p class="metric-label">${label}</p>
+          <p class="metric-value">${value}</p>
+          <p class="metric-note">${note}</p>
+        </div>
+      `;
+    }
+
+    function shortResultText(calc) {
+      const verb = calc.profit >= 0 ? "sobrou" : "faltou";
+      const amount = money(Math.abs(calc.profit));
+      return `Com ${numberBR(calc.bags, 1)} sacas vendidas a ${moneyCents(calc.price)}, entrou ${money(calc.revenue)}. O custo informado foi ${money(calc.totalCosts)} e ${verb} ${amount}.`;
+    }
+
+    function moneyBars(calc) {
+      const rows = [
+        { label: "Receita", value: calc.revenue, color: "var(--sky)" },
+        { label: "Custos", value: calc.totalCosts, color: "var(--warn)" },
+        { label: calc.profit >= 0 ? "Lucro" : "Prejuízo", value: Math.abs(calc.profit), color: calc.profit >= 0 ? "var(--good)" : "var(--bad)" }
+      ];
+      const max = Math.max(...rows.map((row) => row.value), 1);
+      return barList(rows, max);
+    }
+
+    function costBars(calc) {
+      const rows = calc.costs
+        .filter((item) => item.value > 0)
+        .sort((a, b) => b.value - a.value)
+        .map((item) => ({
+          label: item.label,
+          value: item.value,
+          color: item.id === calc.biggestCost.id ? "var(--soil)" : "var(--leaf)"
+        }));
+      if (!rows.length) return `<p class="metric-note">Nenhum custo foi informado.</p>`;
+      const max = Math.max(...rows.map((row) => row.value), 1);
+      return barList(rows, max, calc.totalCosts);
+    }
+
+    function barList(rows, max, total = null) {
+      return `
+        <div class="bar-list">
+          ${rows.map((row) => {
+            const pct = Math.max(3, (row.value / max) * 100);
+            const share = total ? ` · ${numberBR((row.value / total) * 100, 1)}%` : "";
+            return `
+              <div class="bar-row">
+                <div class="bar-label">${row.label}</div>
+                <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${row.color};"></div></div>
+                <div class="bar-value">${money(row.value)}${share}</div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function sensitivityChart(calc) {
+      const scenarios = [
+        { label: "-10%", price: calc.price * 0.9 },
+        { label: "-5%", price: calc.price * 0.95 },
+        { label: "hoje", price: calc.price },
+        { label: "+5%", price: calc.price * 1.05 },
+        { label: "+10%", price: calc.price * 1.1 }
+      ].map((scenario) => ({
+        ...scenario,
+        profit: scenario.price * calc.bags - calc.totalCosts
+      }));
+      const maxAbs = Math.max(...scenarios.map((item) => Math.abs(item.profit)), 1);
+      const width = 520;
+      const height = 230;
+      const zero = height / 2;
+      const barWidth = 54;
+      return `
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Cenários de preço">
+          <line x1="24" y1="${zero}" x2="${width - 20}" y2="${zero}" stroke="#cbd5c6" stroke-width="2" />
+          ${scenarios.map((item, index) => {
+            const x = 54 + index * 92;
+            const barHeight = Math.max(4, Math.abs(item.profit) / maxAbs * 88);
+            const y = item.profit >= 0 ? zero - barHeight : zero;
+            const color = item.profit >= 0 ? "var(--good)" : "var(--bad)";
+            return `
+              <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="6" fill="${color}" />
+              <text x="${x + barWidth / 2}" y="${height - 36}" text-anchor="middle">${item.label}</text>
+              <text x="${x + barWidth / 2}" y="${height - 16}" text-anchor="middle">${money(item.price)}</text>
+              <text x="${x + barWidth / 2}" y="${item.profit >= 0 ? y - 8 : y + barHeight + 18}" text-anchor="middle">${money(item.profit, true)}</text>
+            `;
+          }).join("")}
+        </svg>
+      `;
+    }
+
+    function productivityChart(calc) {
+      const max = Math.max(calc.type.good * 1.45, calc.productivity, 1);
+      const pct = Math.min(100, (calc.productivity / max) * 100);
+      const lowPct = Math.min(100, (calc.type.low / max) * 100);
+      const goodPct = Math.min(100, (calc.type.good / max) * 100);
+      const status = calc.productivity < calc.type.low
+        ? "baixo para a referência usada"
+        : calc.productivity < calc.type.good
+          ? "dentro de uma faixa intermediária"
+          : "forte para a referência usada";
+
+      return `
+        <svg class="chart-svg" viewBox="0 0 520 230" role="img" aria-label="Produtividade por hectare">
+          <rect x="36" y="86" width="448" height="34" rx="8" fill="#e8ede4" />
+          <rect x="36" y="86" width="${4.48 * pct}" height="34" rx="8" fill="var(--leaf)" />
+          <line x1="${36 + 4.48 * lowPct}" y1="70" x2="${36 + 4.48 * lowPct}" y2="136" stroke="var(--warn)" stroke-width="4" />
+          <line x1="${36 + 4.48 * goodPct}" y1="70" x2="${36 + 4.48 * goodPct}" y2="136" stroke="var(--good)" stroke-width="4" />
+          <text x="36" y="54">0</text>
+          <text x="${36 + 4.48 * lowPct}" y="54" text-anchor="middle">${numberBR(calc.type.low, 0)} sc/ha</text>
+          <text x="${36 + 4.48 * goodPct}" y="54" text-anchor="middle">${numberBR(calc.type.good, 0)} sc/ha</text>
+          <text x="260" y="174" text-anchor="middle" style="font-size:24px; fill:var(--ink);">${numberBR(calc.productivity, 1)} sacas por hectare</text>
+          <text x="260" y="202" text-anchor="middle">${status}</text>
+        </svg>
+      `;
+    }
+
+    function marketHistoryChart() {
+      const items = market.history.slice(-10);
+      if (items.length < 2) return `<p class="metric-note">Histórico de mercado insuficiente para desenhar o gráfico.</p>`;
+
+      const arabicaValues = items.map((item) => item.arabica).filter(Boolean);
+      const conillonValues = items.map((item) => item.conillon).filter(Boolean);
+      const all = [...arabicaValues, ...conillonValues];
+      const min = Math.min(...all) * 0.96;
+      const max = Math.max(...all) * 1.04;
+      const width = 780;
+      const height = 260;
+      const left = 56;
+      const right = 24;
+      const top = 24;
+      const bottom = 52;
+      const plotW = width - left - right;
+      const plotH = height - top - bottom;
+      const x = (index) => left + (plotW / Math.max(items.length - 1, 1)) * index;
+      const y = (value) => top + (1 - ((value - min) / (max - min || 1))) * plotH;
+      const line = (key) => items
+        .map((item, index) => item[key] ? `${index === 0 ? "M" : "L"} ${x(index).toFixed(1)} ${y(item[key]).toFixed(1)}` : "")
+        .join(" ");
+
+      return `
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Histórico recente de arábica e conilon">
+          <line x1="${left}" y1="${top}" x2="${left}" y2="${height - bottom}" stroke="#d4dccf" />
+          <line x1="${left}" y1="${height - bottom}" x2="${width - right}" y2="${height - bottom}" stroke="#d4dccf" />
+          <text x="${left}" y="18">${money(max)}</text>
+          <text x="${left}" y="${height - bottom + 22}">${money(min)}</text>
+          <path d="${line("arabica")}" fill="none" stroke="var(--leaf)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${line("conillon")}" fill="none" stroke="var(--sky)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+          ${items.map((item, index) => `
+            <text x="${x(index)}" y="${height - 18}" text-anchor="middle">${String(item.dateLabel).slice(0, 5)}</text>
+          `).join("")}
+          <circle cx="${width - 202}" cy="34" r="7" fill="var(--leaf)" />
+          <text x="${width - 190}" y="38">Arábica</text>
+          <circle cx="${width - 112}" cy="34" r="7" fill="var(--sky)" />
+          <text x="${width - 100}" y="38">Conilon</text>
+        </svg>
+      `;
+    }
+
+    function diagnosisText(calc) {
+      const pieces = [];
+      const breakEvenGap = calc.price - calc.costPerBag;
+      const biggestShare = calc.totalCosts > 0 ? calc.biggestCost.value / calc.totalCosts : 0;
+
+      pieces.push(`O custo para produzir uma saca ficou em ${moneyCents(calc.costPerBag)}. O preço usado foi ${moneyCents(calc.price)}.`);
+
+      if (calc.profit >= 0) {
+        pieces.push(`A fazenda aguenta uma queda de até ${moneyCents(Math.max(0, breakEvenGap))} por saca antes de entrar no prejuízo, considerando os custos informados.`);
+      } else {
+        pieces.push(`Para empatar, a saca precisaria chegar a ${moneyCents(calc.costPerBag)}, ou os custos precisariam cair na mesma proporção.`);
+      }
+
+      if (calc.totalCosts > 0) {
+        pieces.push(`O maior peso do custo foi ${calc.biggestCost.label}, com ${numberBR(biggestShare * 100, 1)}% do gasto total.`);
+      }
+
+      if (calc.productivity < calc.type.low) {
+        pieces.push(`A produtividade de ${numberBR(calc.productivity, 1)} sc/ha ficou abaixo da referência de gestão para ${calc.type.short}; vale revisar estande, nutrição, pragas, colheita e talhões fracos com assistência técnica.`);
+      } else if (calc.productivity < calc.type.good) {
+        pieces.push(`A produtividade está em faixa intermediária para ${calc.type.short}; separar os custos por talhão pode mostrar onde a lavoura responde melhor.`);
+      } else {
+        pieces.push(`A produtividade está forte para a referência usada em ${calc.type.short}; o ponto principal agora é proteger margem e qualidade na venda.`);
+      }
+
+      const profitAtMinusFive = calc.price * 0.95 * calc.bags - calc.totalCosts;
+      pieces.push(`Se o preço cair 5%, o resultado estimado vira ${money(profitAtMinusFive)}.`);
+      pieces.push(`Não corte adubo, manejo ou controle só pelo gráfico: confirme com notas, análise de solo, agrônomo e comprador local.`);
+
+      return pieces.join(" ");
+    }
+
+    nextBtn.addEventListener("click", nextStep);
+    backBtn.addEventListener("click", previousStep);
+    speakBtn.addEventListener("click", () => speak(stepSpeakText()));
+    repeatAudio.addEventListener("click", () => speak(latestSpeech || stepSpeakText()));
+    openHubBtn.addEventListener("click", () => showView(accountState.user ? "hub" : "login"));
+    demoLoginBtn.addEventListener("click", demoLogin);
+    document.querySelectorAll("[data-hub-tab]").forEach((button) => {
+      button.addEventListener("click", () => {
+        accountState.activeTab = button.dataset.hubTab;
+        renderHub();
+      });
+    });
+    window.addEventListener("DOMContentLoaded", () => {
+      renderStep(false);
+      initAuth();
+      refreshLucide();
+      loadMarket();
+    });
+  </script>
+</body>
+</html>
